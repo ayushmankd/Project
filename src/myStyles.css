@@ -1,0 +1,62 @@
+.container {
+  background: #ebeeef;
+  width: 100%;
+  min-height: 100vh;
+  align-items: center;
+  display: flex;
+  justify-content: center;
+}
+.login {
+  width: 60%;
+  background: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.login-title {
+  background: linear-gradient(to bottom, rgba(54,84,99,0.7) 0%, rgba(54,84,99,0.7) 59%, rgba(0, 0, 0, 0.65) 100%), url('./bg-01.jpg');
+  width: 100%;
+  z-index: 1;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+  padding: 70px 15px 74px 15px;
+}
+.login-title-text {
+  font-size: 30px;
+  color: #fff;
+  text-transform: uppercase;
+  line-height: 1.2;
+  text-align: center;
+}
+.login-form {
+  width: 100%;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  align-items: center;
+  padding: 5% 8% 8% 5%;
+}
+.input-with-label {
+  display: flex;
+  width: 100%;
+  justify-content: space-around;
+  align-items: flex-end;
+  padding: 5% 1% 1% 10% 
+}
+.label {
+  font-size: 20px;
+  color: #404040
+}
+.input-1 {
+  height: 50px;
+  font-size: 15px;
+  color: #555555;
+  line-height: 1.2;
+  display: block;
+  width: 100%;
+  background: transparent;
+  margin-left: 25px
+}

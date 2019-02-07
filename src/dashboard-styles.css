@@ -1,0 +1,40 @@
+.dashboard-container {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  margin: 0
+}
+.left-pane {
+  width: 22%;
+  background-color: black;
+  min-height: 100vh;
+  z-index: 100;
+  background: linear-gradient(to bottom, rgba(54,84,99,0.7) 0%, rgba(54,84,99,0.7) 59%, rgba(150, 150, 150, 0.65) 100%), url('./stock4.jpg');
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+  border-right: 1px solid #000;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  align-items: center;
+}
+.right-pane {
+  width: 78%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 5%
+}
+.left-pane-text {
+  color: #aaa
+}
+.table-heading {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
