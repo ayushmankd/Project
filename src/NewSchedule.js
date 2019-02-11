@@ -1,0 +1,64 @@
+import React from 'react'
+import './new-schedule.css'
+import { Table, Button } from 'reactstrap'
+import { Link } from 'react-router-dom'
+// import LeftPaneDashboard from './LeftPaneDashboard';
+import TableHeadingDashboard from './TableHeadingDashboard';
+import TableRowDashboard from './TableRowDashboard';
+export default class NewSchedule extends React.Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      numOfRows: [1, 2, 3],
+      session: '',
+      table: []
+    }
+  }
+  addNewRow() {
+    let newElement = this.state.numOfRows.slice(-1)[0] + 1
+    this.setState({numOfRows: [...this.state.numOfRows, newElement]})
+  }
+  componentDidMount() {
+    let session = prompt('Exam Schedule for Session?')
+    this.setState({ session })
+  }
+  updateTable = (row) => {
+    let table = this.state.table;
+    table[row.rowNum - 1] = row
+    this.setState({ table })
+  }
+  render() {
+    return(
+      <div>
+      <header className="new-schedule-header">
+        <h4>View Previous Schedules</h4>
+      </header>
+      <div className="new-schedule-container">
+        <h1>Exam Schedule for {this.state.session}</h1>
+        <Table bordered>
+          <TableHeadingDashboard />
+          <tbody>
+            {
+              this.state.numOfRows.map((rowNum) => <TableRowDashboard rowNum={rowNum} updateTable={this.updateTable}/>)
+            }
+          </tbody>
+        </Table>
+        <div className="buttons">
+          <Button onClick={() => this.addNewRow()}>
+            Add New
+          </Button>
+          <Link to={{
+            pathname: "/requisition",
+            table: this.state.table,
+            session: this.state.session
+          }}>
+            <Button>
+              Next
+            </Button>
+          </Link>
+        </div>
+      </div>
+      </div>
+    )
+  }
+}

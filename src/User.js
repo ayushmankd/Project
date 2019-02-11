@@ -1,5 +1,5 @@
 import React from 'react'
-import './dashboard-styles.css'
+import './new-schedule.css'
 import { Table, Button } from 'reactstrap'
 export default class User_Dashboard extends React.Component {
   render() {
