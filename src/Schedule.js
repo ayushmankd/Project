@@ -5,6 +5,7 @@ import ScheduleTable from './ScheduleTable';
 export default class Schedule extends React.Component {
   constructor(props) {
     super(props)
+    console.log(props)
     this.state = {
       dropdown: false,
       departments: ['Civil', 'CSE', 'Mechanical', 'Production', 'Chemical', 'Mettallurgy', 'Architecture'],
@@ -91,7 +92,9 @@ export default class Schedule extends React.Component {
           }],
         },
       ],
-      dataToShow: []
+      dataToShow: [],
+      date: null,
+      session: props.match.params.schedule
     }
   }
   componentDidMount() {
@@ -105,6 +108,7 @@ export default class Schedule extends React.Component {
     }));
   }
   filterDate(date) {
+    this.setState({ date })
     let dataToShow = []
     if (date == null)
       dataToShow = this.state.data
@@ -117,20 +121,20 @@ export default class Schedule extends React.Component {
       <div className="schedule-container">
         <header className="schedule-header">
           <div className="header-back">
-            <Button color="primary">Back</Button>
+            <Button color="primary" onClick={() => this.props.history.goBack()}>Back</Button>
           </div>
           <div className="header-text">
             <h1>
-              2019-20 Even Semester
+              {this.state.session}
             </h1>
           </div>
           <div className="header-date-picker">
             <Dropdown isOpen={this.state.dropdown} toggle={() => this.toggle()}>
               <DropdownToggle caret>
-                Select Date
+                {this.state.date != null ? this.state.date : 'Select Date'}
               </DropdownToggle>
               <DropdownMenu>
-                <DropdownItem onClick={() => this.filterDate(null)}> Show All</DropdownItem>
+                <DropdownItem onClick={() => this.filterDate(null)}>Show All</DropdownItem>
                 {
                   this.state.data.map((item) => <DropdownItem onClick={() => this.filterDate(item.date)}>{item.date}</DropdownItem>)
                 }

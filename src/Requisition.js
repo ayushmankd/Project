@@ -1,13 +1,29 @@
 import React from 'react'
 import './requisition.css'
+import fire from './firebase'
 import { Table, Button, Modal, ModalBody, ModalFooter, ModalHeader } from 'reactstrap'
 export default class Requisition extends React.Component {
   constructor(props) {
     super(props) 
     this.state = {
-      departments: ['Civil', 'CSE', 'Mechanical', 'Production', 'Chemical', 'Mettallurgy', 'Architecture'],
+      departments: [
+        'Civ',
+        'Elec',
+        'Mech',
+        'CSEA',
+        'ETC',
+        'Chem',
+        'Mett',
+        'Arch',
+        'Prod',
+        'Phy',
+        'Chem',
+        'Math',
+        'Eng',
+        'Mngmt',
+        'Eco'
+      ],
       table: props.location.table,
-      // table: [{rowNum: 1, total: 320, date: 2019-12-12}],
       session: props.location.session,
       reqTable: [], 
       modal: false
@@ -16,50 +32,102 @@ export default class Requisition extends React.Component {
   componentDidMount() {
     let reqTable = []
     this.state.table.forEach(element => {
-      let newObj = []
-      newObj.push(element.rowNum)
-      newObj.push(element.date)
-      let total = element.total
-      this.state.departments.forEach(dept => {
-        let randomNumber = Math.floor(Math.random() * (total - 1 + 1) + 1)
-        newObj.push(randomNumber)
-        total -= randomNumber
-      })  
-      newObj.push(element.total)
+      let newObj = {}
+      let req = Math.ceil(parseInt(element.total, 10) / 20) + 3;
+      Object.defineProperties(newObj, {
+        'rowNum': {
+          value: element.rowNum,
+          writable: true,
+          enumerable: true
+        },
+        'date': {
+          value: element.date,
+          writable: true,
+          enumerable: true
+        },
+        'total': {
+          value: element.total,
+          writable: true,
+          enumerable: true
+        },
+        'req': {
+          value: req,
+          writable: true,
+          enumerable: true
+        },
+      })
+      let tempReq = req
+      this.state.departments.forEach(element => {
+        if (tempReq != 0) {
+          Object.defineProperty(newObj, element, {
+            value: 1, writable: true, enumerable: true })
+          tempReq--;
+        } else {
+          Object.defineProperty(newObj, element, { value: 0, writable: true, enumerable: true })
+        }
+      });
+      if (tempReq != 0)
+        newObj['Civ'] += tempReq
       reqTable.push(newObj)
     });
     this.setState({ reqTable })
   }
-  // update(newValue, rowNum, index) {
-  //   let reqTable = this.state.reqTable
-  //   reqTable[rowNum][index] = newValue
-  //   this.setState({ reqTable })  
-  // }
   tableRow(row) {
     return (
-      <tr rowNum={row[0]}>
+      <tr rowNum={row.rowNum}>
         <th scope="row">
-          <input type="date" value={row[1]} onChange={(newValue) => this.updateDate(newValue)} />
+          <input type="date" value={row.date} onChange={(newValue) => this.updateDate(newValue)} />
         </th>
         {this.state.departments.map((item, index) => 
           <td>
             <input 
               className="requisition-table-row" 
-              value={row[index + 2]} 
-              // onChange={(newValue) => this.update(newValue.target.valueAsNumber, row[0], index + 2)} 
+              value={row[item]} 
             />
           </td>
         )}
         <td>
           <h5>
-            {row[this.state.departments.length + 2]}
+            {row.total}
+          </h5>
+        </td>
+        <td>
+          <h5>
+            {row.req}
           </h5>
         </td>
       </tr>
     )
   }
   openModal() {
-    this.setState({ modal: true });
+    let db = fire.firestore()
+    var batch = db.batch();
+    var docRef = db.collection('schedules').doc()
+    batch.set(docRef, {
+      session: this.state.session
+    })
+    var collec = docRef.collection('schedule')
+    this.state.reqTable.forEach(element => {
+        var newRef = collec.doc()
+        var tempObj = {
+          date: element.date,
+          total_req: element.req,
+          total_students: element.total
+        }
+        batch.set(newRef, tempObj)
+        var tempRef = newRef.collection('branch_req')
+        this.state.departments.forEach(
+          branch => {
+            var collecTempRef = tempRef.doc()
+            var branchObj = {
+              branch: branch,
+              req: element[branch]
+            }
+            batch.set(collecTempRef, branchObj)
+          } 
+        )
+    })
+    batch.commit().then(() => this.setState({ modal: true }));
   }
   goToHome() {
     this.setState({modal: false}, () => this.props.history.push('/dashboard'))
@@ -77,7 +145,8 @@ export default class Requisition extends React.Component {
               <tr>
                 <th>Date</th>
                 {this.state.departments.map((item) => <th>{item}</th>)}
-                <th>Total</th>
+                <th>Total Students</th>
+                <th>Total Requirement</th>
               </tr>
             </thead>
             <tbody>

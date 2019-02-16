@@ -27,6 +27,12 @@ export default class NewSchedule extends React.Component {
     table[row.rowNum - 1] = row
     this.setState({ table })
   }
+  delete = (rowNum) => {
+    let numOfRows = [...this.state.numOfRows]
+    let index = numOfRows.indexOf(rowNum)
+    numOfRows.splice(index, 1)
+    this.setState({ numOfRows })
+  }
   render() {
     return(
       <div>
@@ -39,7 +45,14 @@ export default class NewSchedule extends React.Component {
           <TableHeadingDashboard />
           <tbody>
             {
-              this.state.numOfRows.map((rowNum) => <TableRowDashboard rowNum={rowNum} updateTable={this.updateTable}/>)
+              this.state.numOfRows.map(
+                (rowNum) => 
+                  <TableRowDashboard 
+                    rowNum={rowNum} 
+                    updateTable={this.updateTable}
+                    delete={() => this.delete()}
+                  />
+                )
             }
           </tbody>
         </Table>

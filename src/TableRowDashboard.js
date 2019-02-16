@@ -26,6 +26,9 @@ export default class TableRowDashboard extends React.Component {
   updateDate(newValue) {
     this.setState({date: newValue.target.value}, () => this.props.updateTable(this.state)) 
   }
+  delete() {
+    this.props.delete(this.state.rowNum)
+  }
   render() {
     return (
       <tr ref={this.state.rowNum}>
@@ -42,6 +45,14 @@ export default class TableRowDashboard extends React.Component {
           <h5>
             {this.state.total}
           </h5>
+        </td>
+        <td>
+          {/* <button>Delete</button> */}
+          <img
+            src="https://img.icons8.com/ios/50/000000/trash.png" 
+            height="30px" 
+            width="30px"
+            onClick={() => this.delete()}/>
         </td>
       </tr>
     )
