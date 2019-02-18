@@ -8,33 +8,11 @@ export default class FillRequisition extends React.Component {
     super(props)
     this.state = {
       dropdown: false,
-      data: [
-        {
-          date: '12-02-2019',
-          sitting: '1st',
-          required: 2,
-          list: [],
-        }, 
-        {
-          date: '13-02-2019',
-          sitting: '1st',
-          required: 2,
-          list: [],
-        }, 
-        {
-          date: '14-02-2019',
-          sitting: '1st',
-          required: 1,
-          list: [],
-        }, {
-          date: '15-02-2019',
-          required: 3,
-          list: [],
-        },
-      ],
       dataToShow: [],
       date: null,
-      session: '2019'
+      session: '2019',
+      currentDoc: '',
+      currentScheduleData: ''
     }
   }
   async componentDidMount() {
@@ -43,27 +21,21 @@ export default class FillRequisition extends React.Component {
     var schedulesRef = db.collection("schedules")
     var schedulesRefNew = schedulesRef.where("session", "==", "2019")
     let schedules = await schedulesRefNew.get()
-    schedules.docs.map(async (schedule) => {
-      var schedule_list = schedule.ref
-      let schedule_data = await schedule_list.collection('schedule').get()
-        schedule_data.docs.map(async (data) => {
-          var temp = data.data()
+    schedules.docs.map((schedule) => {
+      let data = schedule.data()
+      for (const key in data.schedule) {
+        if (data.schedule.hasOwnProperty(key)) {
+          const element = data.schedule[key];
           var newObj = {
-            date: temp.date,
-            required: '',
-            list: []
-          }
-          var branch_list = data.ref
-          let branches = await branch_list.collection('branch_req').where("branch", "==", "CSEA").get()
-          branches.docs.map((branch) => {
-            var tempB = branch.data()
-            console.log(tempB)
-            newObj.required = tempB.req
-          })
-          dataToShow.push(newObj)
-        })
+            date: key,
+            required: element['CSEA'].req,
+            list: element['CSEA'].list
+          }  
+        }
+        dataToShow.push(newObj)
+      }
+      this.setState({ dataToShow, currentDoc: schedule.id, currentScheduleData: data }, () => console.log(this.state.dataToShow))
     })
-    this.setState({ dataToShow }, () => console.log(this.state.dataToShow))
   }
   toggle() {
     this.setState(prevState => ({
@@ -78,6 +50,21 @@ export default class FillRequisition extends React.Component {
     else
       dataToShow = this.state.data.filter((item) => date == item.date)
     this.setState({ dataToShow })
+  }
+  updateList = (newList, index) => {
+    let dataToShow = [...this.state.dataToShow]
+    dataToShow[index].list = newList
+    this.setState({ dataToShow })
+  }
+  submit() {
+    var dataToBeUpdated = this.state.currentScheduleData.schedule
+    this.state.dataToShow.forEach((item) => {
+      dataToBeUpdated[item.date]['CSEA'].list = item.list
+    })
+    let db = fire.firestore()
+    db.collection('schedules').doc(this.state.currentDoc).update({
+      schedule: dataToBeUpdated
+    }).then(() => console.log('UPDATED'))
   }
   render() {
     return (
@@ -99,7 +86,7 @@ export default class FillRequisition extends React.Component {
               <DropdownMenu>
                 <DropdownItem onClick={() => this.filterDate(null)}>Show All</DropdownItem>
                 {
-                  this.state.data.map((item) => <DropdownItem onClick={() => this.filterDate(item.date)}>{item.date}</DropdownItem>)
+                  this.state.dataToShow.map((item) => <DropdownItem onClick={() => this.filterDate(item.date)}>{item.date}</DropdownItem>)
                 }
               </DropdownMenu>
             </Dropdown>
@@ -110,18 +97,18 @@ export default class FillRequisition extends React.Component {
             <Button>
               Print
             </Button>
-            <Button>
+            <Button onClick={() => this.submit()}>
               Done
             </Button>
           </div>
           {
-            this.state.dataToShow.map((item) =>
+            this.state.dataToShow.map((item, indexTable) =>
               <div>
                 <div className="schedule-table-heading">
                   <h3>Date: {item.date}</h3>
                   <h3>Required: {item.required}</h3>
                 </div>
-                <FillScheduleTable list={item} />
+                <FillScheduleTable list={item} indexTable={indexTable} updateList={this.updateList}/>
               </div>
             )
           }

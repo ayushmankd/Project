@@ -25,7 +25,7 @@ class App extends Component {
             <Route path="/dashboard-user" component={UserDashboard} />
             <Route path="/schedule/:schedule" component={Schedule} />
             <Route path="/requisition" component={Requisition} />
-            <Route path="/fill-new" component={FillRequisition} />
+            <Route path="/fill-new/:branch" component={FillRequisition} />
             <Route path="/update-list" component={UpdateList} />
             <Route path="/view-list" component={ViewList} />
           </div>

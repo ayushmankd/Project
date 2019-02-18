@@ -1,14 +1,26 @@
 import React from 'react'
 import './schedule-list.css'
 import { Link } from 'react-router-dom'
+import fire from './firebase'
 import { Button, Table } from 'reactstrap'
 export default class ScheduleList extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
-      schedule_list: ['2019-20', '2020-21']
+      schedule_list: []
     }
   } 
+  async componentDidMount() {
+    let schedule_list = []
+    let db = fire.firestore()
+    let schedules = await db.collection('schedules').get()
+    schedules.forEach((session) => {
+      var toPush = session.data()
+      schedule_list.push(toPush)
+    })
+    console.log(schedule_list)
+    this.setState({ schedule_list })
+  }
   render() {
     return (
       <div className="schedule-list-container">
@@ -27,9 +39,14 @@ export default class ScheduleList extends React.Component {
             <tbody>
               {this.state.schedule_list.map((item) => 
                 <tr>
-                  <td>{item}</td>
+                  <td>{item.session}</td>
                     <td>
-                      <a href={"/schedule/" + item}>View</a>
+                      <Link to={{
+                        pathname: '/schedule/' + item.session,
+                        data: item
+                      }}>
+                        View
+                      </Link>
                     </td>
                 </tr>
               )}

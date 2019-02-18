@@ -101,33 +101,35 @@ export default class Requisition extends React.Component {
   }
   openModal() {
     let db = fire.firestore()
-    var batch = db.batch();
-    var docRef = db.collection('schedules').doc()
-    batch.set(docRef, {
-      session: this.state.session
-    })
-    var collec = docRef.collection('schedule')
+    var docRef = db.collection('schedules')
+    var objectToAdd = {
+      session: this.state.session,
+      schedule: {}
+    }
     this.state.reqTable.forEach(element => {
-        var newRef = collec.doc()
-        var tempObj = {
-          date: element.date,
-          total_req: element.req,
-          total_students: element.total
-        }
-        batch.set(newRef, tempObj)
-        var tempRef = newRef.collection('branch_req')
-        this.state.departments.forEach(
-          branch => {
-            var collecTempRef = tempRef.doc()
-            var branchObj = {
-              branch: branch,
-              req: element[branch]
-            }
-            batch.set(collecTempRef, branchObj)
-          } 
-        )
+      var tempObj = {
+        total_req: element.req,
+        total_students: element.total
+      }
+      this.state.departments.forEach(
+        branch => {
+          Object.defineProperty(tempObj, branch, {
+            value: {
+              req: element[branch],
+              list: []
+            },
+            enumerable: true,
+            writable: true
+          })
+        } 
+      )
+      Object.defineProperty(objectToAdd.schedule, element.date, {
+        value: tempObj,
+        enumerable: true,
+        writable: true
+      })
     })
-    batch.commit().then(() => this.setState({ modal: true }));
+    docRef.add(objectToAdd).then(() => this.setState({ modal: true }));
   }
   goToHome() {
     this.setState({modal: false}, () => this.props.history.push('/dashboard'))

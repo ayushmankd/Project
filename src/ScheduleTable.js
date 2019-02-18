@@ -4,8 +4,29 @@ export default class ScheduleTable extends React.Component {
   constructor(props) {
     super(props) 
     this.state = {
-      list: props.list
+      data: props.list,
+      list: []
     }
+  }
+  componentDidMount() {
+    let list = []
+    for (const key in this.state.data) {
+      if (this.state.data.hasOwnProperty(key)) {
+        const element = this.state.data[key];
+        if (element.req != 0 && element.list != undefined) {
+          element.list.forEach(person => {
+            var obj = {
+              name: person.name,
+              email: person.email,
+              phone: person.phone,
+              branch: key
+            }
+            list.push(obj)
+          });
+        }
+      }
+    }
+    this.setState({ list })
   }
   render() {
     return (

@@ -1,6 +1,7 @@
 import React from 'react'
 import { Button } from 'reactstrap'
 import './login.css'
+import fire from './firebase'
 export default class Login extends React.Component {
   constructor(props) {
     super(props)
@@ -10,10 +11,20 @@ export default class Login extends React.Component {
     }
   }
   login() {
-    if(this.state.username == 'ayushmankd@gmail.com' && this.state.password == '12345678'){
-      this.props.history.push('/dashboard')
+    fire.auth().signInWithEmailAndPassword(this.state.username, this.state.password).then((user) => {
+      if (user.user.uid == 'Ssqgr2tyGkNBMphIXP0Yd6xj2qK2')
+        this.props.history.push('/dashboard')
+      else 
+        this.props.history.push('/dashboard-user')
     }
+    ).catch(function(error) {
+      // Handle Errors here.
+      var errorCode = error.code;
+      var errorMessage = error.message;
+      // ...
+    });
   }
+  
   render() {
     return (
       <div className="container">

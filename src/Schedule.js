@@ -5,101 +5,17 @@ import ScheduleTable from './ScheduleTable';
 export default class Schedule extends React.Component {
   constructor(props) {
     super(props)
-    console.log(props)
     this.state = {
       dropdown: false,
-      departments: ['Civil', 'CSE', 'Mechanical', 'Production', 'Chemical', 'Mettallurgy', 'Architecture'],
-      data: [
-        {
-          date: '12-02-2019',
-          sitting: '1st',
-          total: 20,
-          list: [{
-            name: 'Mr. X',
-            phone: '1234567890',
-            email: 'xyz@email.com',
-            branch: 'CSE'
-          }, {
-              name: 'Mr. Y',
-              phone: '1234567890',
-              email: 'abc@email.com',
-              branch: 'Civil'
-          }, {
-            name: 'Ms. Q',
-            phone: '213467321',
-            email: 'asd@dmail.com',
-            branch: 'Elec'
-          }],
-        }, {
-          date: '13-02-2019',
-          sitting: '1st',
-          total: 20,
-          list: [{
-            name: 'Mr. X',
-            phone: '1234567890',
-            email: 'xyz@email.com',
-            branch: 'CSE'
-          }, {
-            name: 'Mr. Y',
-            phone: '1234567890',
-            email: 'abc@email.com',
-            branch: 'Civil'
-          }, {
-            name: 'Ms. Q',
-            phone: '213467321',
-            email: 'asd@dmail.com',
-            branch: 'Elec'
-          }],
-        }, {
-          date: '14-02-2019',
-          sitting: '1st',
-          total: 15,
-          list: [{
-            name: 'Mr. X',
-            phone: '1234567890',
-            email: 'xyz@email.com',
-            branch: 'CSE'
-          }, {
-            name: 'Mr. Y',
-            phone: '1234567890',
-            email: 'abc@email.com',
-            branch: 'Civil'
-          }, {
-            name: 'Ms. Q',
-            phone: '213467321',
-            email: 'asd@dmail.com',
-            branch: 'Elec'
-          }],
-        }, {
-          date: '15-02-2019',
-          sitting: '1st',
-          total: 10,
-          list: [{
-            name: 'Mr. X',
-            phone: '1234567890',
-            email: 'xyz@email.com',
-            branch: 'CSE'
-          }, {
-            name: 'Mr. Y',
-            phone: '1234567890',
-            email: 'abc@email.com',
-            branch: 'Civil'
-          }, {
-            name: 'Ms. Q',
-            phone: '213467321',
-            email: 'asd@dmail.com',
-            branch: 'Elec'
-          }],
-        },
-      ],
+      departments: [],
+      data: props.location.data,
       dataToShow: [],
       date: null,
       session: props.match.params.schedule
     }
   }
   componentDidMount() {
-    let dataToShow = []
-    dataToShow = this.state.data
+    let dataToShow = Object.keys(this.state.data.schedule)
     this.setState({ dataToShow })
   }
   toggle() {
@@ -128,7 +44,7 @@ export default class Schedule extends React.Component {
               {this.state.session}
             </h1>
           </div>
-          <div className="header-date-picker">
+          {/* <div className="header-date-picker">
             <Dropdown isOpen={this.state.dropdown} toggle={() => this.toggle()}>
               <DropdownToggle caret>
                 {this.state.date != null ? this.state.date : 'Select Date'}
@@ -140,11 +56,11 @@ export default class Schedule extends React.Component {
                 }
               </DropdownMenu>
             </Dropdown>
-          </div>
+          </div> */}
         </header>
         <div className="schedule-body">
           <div className="schedule-body-buttons">
-            <Dropdown isOpen={this.state.dropdownFilter} toggle={() => this.toggleFilter()}>
+            {/* <Dropdown isOpen={this.state.dropdownFilter} toggle={() => this.toggleFilter()}>
               <DropdownToggle caret>
                 Filter
               </DropdownToggle>
@@ -153,7 +69,7 @@ export default class Schedule extends React.Component {
                   this.state.departments.map((item) => <DropdownItem>{item}</DropdownItem>)
                 }
               </DropdownMenu>
-            </Dropdown>
+            </Dropdown> */}
             <Button>
               Print
             </Button>
@@ -162,10 +78,10 @@ export default class Schedule extends React.Component {
             this.state.dataToShow.map((item) => 
             <div>
                 <div className="schedule-table-heading">
-                  <h3>Date: {item.date} {item.sitting} Sitting</h3>
-                  <h3>Total: {item.total}</h3>
+                  <h3>Date: {item} </h3>
+                  <h3>Total: {this.state.data['schedule'][item].total_req}</h3>
                 </div>
-                <ScheduleTable list={item.list}/>
+                <ScheduleTable list={this.state.data['schedule'][item]} />
             </div>)
           }
         </div>
