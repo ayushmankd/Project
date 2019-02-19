@@ -1,7 +1,7 @@
 import React from 'react'
 import './schedule.css'
 import fire from './firebase'
-import { Button, Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap'
+import { Button, Dropdown, DropdownToggle, DropdownMenu, DropdownItem, Modal, ModalBody, ModalFooter, ModalHeader } from 'reactstrap'
 import FillScheduleTable from './FillScheduleTable';
 export default class FillRequisition extends React.Component {
   constructor(props) {
@@ -13,7 +13,8 @@ export default class FillRequisition extends React.Component {
       session: '2019',
       currentDoc: '',
       currentScheduleData: '',
-      branch: props.location.branch
+      branch: props.location.branch,
+      modal: false
     }
   }
   async componentDidMount() {
@@ -65,7 +66,10 @@ export default class FillRequisition extends React.Component {
     let db = fire.firestore()
     db.collection('schedules').doc(this.state.currentDoc).update({
       schedule: dataToBeUpdated
-    }).then(() => console.log('UPDATED'))
+    }).then(() => this.setState({ modal: true }))
+  }
+  goToHome() {
+    this.props.history.push('/dashboard-user/' + this.state.branch)
   }
   render() {
     return (
@@ -114,6 +118,15 @@ export default class FillRequisition extends React.Component {
             )
           }
         </div>
+        <Modal isOpen={this.state.modal}>
+          <ModalHeader>Success</ModalHeader>
+          <ModalBody>
+            Requisition List has been Sent.
+          </ModalBody>
+          <ModalFooter>
+            <Button color="primary" onClick={() => this.goToHome()}>Go to Home</Button>
+          </ModalFooter>
+        </Modal>
       </div>
     )
   }

@@ -8,7 +8,7 @@ export default class TableHeadingDashboard extends React.Component {
           <th>Date</th>
           <th>1st Sitting</th>
           <th>2nd Sitting</th>
-          <th>Total</th>
+          <th>Total Students</th>
           <th></th>
         </tr>
       </thead>

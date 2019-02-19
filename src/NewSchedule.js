@@ -37,7 +37,9 @@ export default class NewSchedule extends React.Component {
     return(
       <div>
       <header className="new-schedule-header">
-        <h4>View Previous Schedules</h4>
+        <div className="header-back">
+          <Button color="primary" onClick={() => this.props.history.goBack()}>Back</Button>
+        </div>
       </header>
       <div className="new-schedule-container">
         <h1>Exam Schedule for {this.state.session}</h1>

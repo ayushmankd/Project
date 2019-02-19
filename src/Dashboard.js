@@ -37,7 +37,7 @@ export default class Dashboard extends React.Component {
           <Link to="/view-list">
             <div className="animation">
               <h2 className="dashboard-h2">[</h2>
-              <h2 className="dashboard-h2">View List</h2>
+              <h2 className="dashboard-h2">View Faculty List</h2>
               <h2 className="dashboard-h2">]</h2>
             </div>
           </Link>
