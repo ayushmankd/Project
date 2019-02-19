@@ -12,14 +12,15 @@ export default class FillRequisition extends React.Component {
       date: null,
       session: '2019',
       currentDoc: '',
-      currentScheduleData: ''
+      currentScheduleData: '',
+      branch: props.location.branch
     }
   }
   async componentDidMount() {
     let dataToShow = []
     let db = fire.firestore()
     var schedulesRef = db.collection("schedules")
-    var schedulesRefNew = schedulesRef.where("session", "==", "2019")
+    var schedulesRefNew = schedulesRef.where("session", "==", "2019 Even Sem")
     let schedules = await schedulesRefNew.get()
     schedules.docs.map((schedule) => {
       let data = schedule.data()
@@ -28,8 +29,8 @@ export default class FillRequisition extends React.Component {
           const element = data.schedule[key];
           var newObj = {
             date: key,
-            required: element['CSEA'].req,
-            list: element['CSEA'].list
+            required: element[this.state.branch].req,
+            list: element[this.state.branch].list
           }  
         }
         dataToShow.push(newObj)

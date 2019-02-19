@@ -1,74 +1,116 @@
 import React from 'react'
 import './view-list.css'
 import fire from './firebase'
-import { Button, Table } from 'reactstrap'
+import { Button, Table, Modal, ModalBody, ModalFooter, ModalHeader, Form, FormGroup, Label, Input } from 'reactstrap'
 export default class ViewList extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
       list: [],
-      edit: true,
-      addNew: false
+      modalNew: false,
+      branches: [],
+      newName: '',
+      newBranch: '',
+      newPhone: '',
+      newEmail: '',
+      DBlist: {},
+      editModal: false,
+      editIndex: ''
     }
   }
   componentDidMount() {
+    this.getData()
+  }
+  getData() {
     let list = []
+    let branches = []
+    let DBlist = {}
     let db = fire.firestore()
-    db.collection('teacher_list').orderBy('Branch').get()
+    db.collection('teachers').get()
       .then((snapshot) => {
         snapshot.forEach((doc) => {
           let data = doc.data()
-          list.push(data)
+          Object.defineProperty(DBlist, doc.id, {
+            value: data.list,
+            enumerable: true,
+            writable: true
+          })
+          data.list.forEach((item, index) => {
+            var obj = {
+              Name: item.name,
+              Branch: doc.id,
+              Email: item.email,
+              Phone: item.phone,
+              currInd: index
+            }
+            branches.push(doc.id)
+            list.push(obj)
+          })
         });
         return list
       }).then((list) => {
-        this.setState({ list })
+        this.setState({ list, branches, DBlist })
       })
       .catch((err) => {
         console.log('Error getting documents', err);
       });
   }
-  addNew() {
-    let list = [...this.state.list]
-    list.push({
-      Name: '',
-      Email: '',
-      Phone: '',
-      Branch: '' 
+  edit(item, index) {
+    this.setState({ 
+      newName: item.Name,
+      newEmail: item.Email,
+      newPhone: item.Phone,
+      newBranch: item.Branch,
+      editIndex: item.currInd,
+      modalNew: true,
+      editModal: true,
     })
-    this.setState({ list, edit: false, addNew: true })
   }
-  updateBranch(newValue, index) {
-    let list = [...this.state.list]
-    list[index].Branch = newValue;
-    this.setState({ list }) 
-  }
-  updateName(newValue, index) {
-    let list = [...this.state.list]
-    list[index].Name = newValue;
-    this.setState({ list })
-  }
-  updateEmail(newValue, index) {
-    let list = [...this.state.list]
-    list[index].Email = newValue;
-    this.setState({ list })
-  }
-  updatePhone(newValue, index) {
-    let list = [...this.state.list]
-    list[index].Phone = newValue;
-    this.setState({ list })
-  }
-  async saveNew() {
+  update() {
     let db = fire.firestore()
-    let newData = this.state.list[this.state.list.length - 1]
-    var docRef = db.collection('teacher_list')
-    .add({
-      Branch: newData.Branch,
-      Email: newData.Email,
-      Name: newData.Name,
-      Phone: newData.Phone
+    let newList = this.state.DBlist[this.state.newBranch]
+    newList[this.state.editIndex] = {
+      name: this.state.newName,
+      email: this.state.newEmail,
+      phone: this.state.newPhone
+    }
+    db.collection('teachers').doc(this.state.newBranch).set({
+      list: newList
+    }).then(() => {
+      this.setState({ modalNew: false })
+      this.getData()
     })
-    this.setState({ edit: true, addNew: false })
+  }
+  addNew() {
+    let db = fire.firestore()
+    if (this.state.DBlist[this.state.newBranch] == undefined)
+      var appendList = []
+    else
+      var appendList = this.state.DBlist[this.state.newBranch]
+    db.collection('teachers').doc(this.state.newBranch).set({
+      list: [...appendList, {
+        email: this.state.newEmail,
+        name: this.state.newName,
+        phone: this.state.newPhone
+      }]
+    }, {
+      merge: true,
+    }).then(() => this.setState({ modalNew: false }))
+  }
+  changeBranch(newBranch) {
+    this.setState({ newBranch })
+  }
+  changeEmail(newEmail) {
+    this.setState({ newEmail })
+  }
+  changeName(newName) {
+    this.setState({ newName })
+  }
+  changePhone(newPhone) {
+    this.setState({ newPhone })
+  }
+  openNewModal() {
+    this.setState({ modalNew: true })
   }
   render() {
     return (
@@ -81,22 +123,12 @@ export default class ViewList extends React.Component {
         <div className="view-list-body">
           <div className="table-head">
             <div className="header-back">
-              <Button color="primary">Edit</Button>
-            </div>
-            <div className="header-back">
-              {
-                !this.state.addNew ? 
-                  <Button color="primary" onClick={() => this.addNew()}>
-                    Add New
-                  </Button>
-                : 
-                  <Button color="primary" onClick={() => this.saveNew()}>
-                    Save
-                  </Button>
-                }
+              <Button color="primary" onClick={() => this.openNewModal()}>
+                Add New
+              </Button>
             </div>
           </div>
-          <Table bordered size="sm">
+          <Table bordered size="sm" striped>
             <thead>
               <tr>
                 <th>Sl No.</th>
@@ -104,6 +136,7 @@ export default class ViewList extends React.Component {
                 <th>Phone</th>
                 <th>Email</th>
                 <th>Branch</th>
+                <th></th>
               </tr>
             </thead>
             <tbody>
@@ -113,36 +146,106 @@ export default class ViewList extends React.Component {
                     {index + 1}
                   </td>
                   <td>
-                    <input 
-                      value={item.Name} 
-                      disabled={this.state.edit}
-                      onChange={(value) => this.updateName(value.target.value, index)}/>
+                    {item.Name} 
                   </td>
                   <td>
-                    <input 
-                      value={item.Phone} 
-                      disabled={this.state.edit}
-                      onChange={(value) => this.updatePhone(value.target.value, index)}
+                    {item.Phone} 
+                  </td>
+                  <td>
+                    {item.Email} 
+                  </td>
+                  <td>
+                    {item.Branch} 
+                  </td>
+                  <td onClick={() => this.edit(item, index)}>
+                    <img
+                      src="https://img.icons8.com/ios/50/000000/edit-row.png"
+                      height="20px"
+                      width="20px"
+                      style={{
+                        marginRight: '10px'
+                      }}
                     />
-                  </td>
-                  <td>
-                    <input 
-                      value={item.Email} 
-                      disabled={this.state.edit}
-                      onChange={(value) => this.updateEmail(value.target.value, index)}
-                    />
-                  </td>
-                  <td>
-                    <input 
-                      value={item.Branch} 
-                      disabled={this.state.edit}
-                      onChange={(value) => this.updateBranch(value.target.value, index)}/>
+                    Edit
                   </td>
                 </tr>
               )}
             </tbody>
           </Table>
         </div>
+        <Modal isOpen={this.state.modalNew}>
+          <ModalHeader>New</ModalHeader>
+          <ModalBody>
+            <Form>
+              <FormGroup>
+                <Label for="name">Name</Label>
+                <Input 
+                  type="text" 
+                  name="name" 
+                  id="name" 
+                  placeholder="Name of the Person"
+                  value={this.state.newName} 
+                  onChange={(newName) => this.changeName(newName.target.value)}
+                />
+              </FormGroup>
+              <FormGroup>
+                <Label for="email">Email Address</Label>
+                <Input 
+                  type="email" 
+                  name="email" 
+                  id="email" 
+                  placeholder="Email of the Person" 
+                  value={this.state.newEmail}
+                  onChange={(newEmail) => this.changeEmail(newEmail.target.value)}
+                />
+              </FormGroup>
+              <FormGroup>
+                <Label for="phone">Phone Number</Label>
+                <Input 
+                  type="number" 
+                  name="phone" 
+                  id="phone" 
+                  placeholder="Phone Number of the Person"
+                  value={this.state.newPhone} 
+                  onChange={(newPhone) => this.changePhone(newPhone.target.value)}
+                />
+              </FormGroup>
+              <FormGroup>
+                <Label for="branch">Branch</Label>
+                <Input 
+                  type="text" 
+                  name="branch" 
+                  disabled={this.state.editModal}
+                  id="branch" 
+                  list="branches" 
+                  placeholder="Branch"
+                  value={this.state.newBranch}
+                  onChange={(newBranch) => this.changeBranch(newBranch.target.value)}
+                />
+                  <datalist id='branches'>
+                  {
+                    this.state.branches.map((item, index) =>
+                      <option 
+                        key={index.toString()}
+                      >
+                        {item}
+                      </option>
+                    )
+                  }
+                  </datalist>
+              </FormGroup>
+            </Form>
+          </ModalBody>
+          <ModalFooter>
+            {
+              this.state.editModal 
+                ?
+                  <Button color="primary" onClick={() => this.update()}>Update</Button>
+                :
+                  <Button color="primary" onClick={() => this.addNew()}>Add New</Button>
+            }
+          </ModalFooter>
+        </Modal>
       </div>
     )
   }

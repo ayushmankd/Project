@@ -3,6 +3,12 @@ import './user-dashboard.css'
 import { Link } from 'react-router-dom'
 import { Button } from 'reactstrap'
 export default class UserDashboard extends React.Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      branch: props.match.params.branch
+    }
+  }
   render() {
     return (
       <div className="user-dashboard-container">
@@ -20,7 +26,12 @@ export default class UserDashboard extends React.Component {
           </div>
         </div>
         <div className="user-dashboard-links">
-          <Link to="/fill-new">
+          <Link 
+            to={{
+              pathname: "/fill-new",
+              branch: this.state.branch
+            }}
+          >
             <div className="animation">
               <h2 className="user-dashboard-h2">[</h2>
               <h2 className="user-dashboard-h2">Fill New Schedule</h2>
