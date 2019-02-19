@@ -79,7 +79,7 @@ export default class Schedule extends React.Component {
             <div>
                 <div className="schedule-table-heading">
                   <h3>Date: {item} </h3>
-                  <h3>Total: {this.state.data['schedule'][item].total_req}</h3>
+                  <h3>Total Required: {this.state.data['schedule'][item].total_req}</h3>
                 </div>
                 <ScheduleTable list={this.state.data['schedule'][item]} />
             </div>)

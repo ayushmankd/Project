@@ -49,6 +49,7 @@ export default class ViewList extends React.Component {
         });
         return list
       }).then((list) => {
+        branches = [...new Set(branches.map((item) => item))]
         this.setState({ list, branches, DBlist })
       })
       .catch((err) => {
@@ -77,7 +78,15 @@ export default class ViewList extends React.Component {
     db.collection('teachers').doc(this.state.newBranch).set({
       list: newList
     }).then(() => {
-      this.setState({ modalNew: false })
+      this.setState({
+        newName: '',
+        newEmail: '',
+        newPhone: '',
+        newBranch: '',
+        editIndex: '',
+        modalNew: false,
+        editModal: false 
+      })
       this.getData()
     })
   }

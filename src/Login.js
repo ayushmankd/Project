@@ -15,7 +15,7 @@ export default class Login extends React.Component {
       if (user.user.uid == 'Ssqgr2tyGkNBMphIXP0Yd6xj2qK2')
         this.props.history.push('/dashboard')
       else 
-        this.props.history.push('/dashboard-user')
+        this.props.history.push('/dashboard-user/CSEA')
     }
     ).catch(function(error) {
       // Handle Errors here.
