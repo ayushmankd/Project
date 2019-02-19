@@ -95,7 +95,10 @@ export default class ViewList extends React.Component {
       }]
     }, {
       merge: true,
-    }).then(() => this.setState({ modalNew: false }))
+    }).then(() => {
+      this.setState({ modalNew: false })
+      this.getData()
+    })
   }
   changeBranch(newBranch) {
     this.setState({ newBranch })
