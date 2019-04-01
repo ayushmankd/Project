@@ -7,18 +7,24 @@ export default class ScheduleList extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
-      schedule_list: []
+      schedule_list: [],
+      branch: props.match.params.branch
     }
+    console.log(this.state.branch)
   } 
   async componentDidMount() {
     let schedule_list = []
-    let db = fire.firestore()
-    let schedules = await db.collection('schedules').get()
+    let db =            fire.firestore()
+    let schedules =     await db.collection('schedules').get()
     schedules.forEach((session) => {
       var toPush = session.data()
+      // Object.defineProperty(toPush, 'branch', {
+      //   value: this.state.branch,
+      //   enumerable: true,
+      //   writable: true
+      // })
       schedule_list.push(toPush)
     })
-    console.log(schedule_list)
     this.setState({ schedule_list })
   }
   render() {
@@ -42,8 +48,9 @@ export default class ScheduleList extends React.Component {
                   <td>{item.session}</td>
                     <td>
                       <Link to={{
-                        pathname: '/schedule/' + item.session,
-                        data: item
+                        pathname: '/schedule/' + item.session ,
+                        data: item,
+                        branch: this.state.branch
                       }}>
                         View
                       </Link>

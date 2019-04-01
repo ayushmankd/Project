@@ -20,12 +20,12 @@ class App extends Component {
             <Route path="/" component={Login} exact={true}/>
             <Route path="/dashboard" component={Dashboard} />
             <Route path="/view-schedule" component={ScheduleList} />
-            <Route path="/view-previous-schedule" component={ScheduleList} />
+            <Route path="/view-previous-schedule/:branch" component={ScheduleList} />
             <Route path="/new" component={NewSchedule} exact/>
             <Route path="/dashboard-user/:branch" component={UserDashboard} />
             <Route path="/schedule/:schedule" component={Schedule} />
             <Route path="/requisition" component={Requisition} />
-            <Route path="/fill-new" component={FillRequisition} />
+            <Route path="/fill-new/:branch/:session" component={Login} />
             <Route path="/update-list" component={UpdateList} />
             <Route path="/view-list" component={ViewList} />
           </div>

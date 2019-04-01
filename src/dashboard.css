@@ -37,22 +37,3 @@
   padding-left: 15%;
   color: antiquewhite
 }
-.dashboard-h2 {
-  color: antiquewhite;
-}
-.animation {
-  width: 400px;
-  display: flex;
-  justify-content: space-around
-}
-.animation:hover {
-  width: 450px;
-  text-decoration: underline;
-  text-decoration-style: solid;
-  text-decoration-color: antiquewhite;
-  text-underline-position: below
-}
-/* @keyframes hover-text {
-  from {text-decoration: none;}
-  to {text-decoration: underline;}
-} */

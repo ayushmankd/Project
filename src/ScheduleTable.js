@@ -5,24 +5,41 @@ export default class ScheduleTable extends React.Component {
     super(props) 
     this.state = {
       data: props.list,
-      list: []
+      list: [],
+      branch: props.branch
     }
+    console.log(this.state.branch)
   }
   componentDidMount() {
     let list = []
-    for (const key in this.state.data) {
-      if (this.state.data.hasOwnProperty(key)) {
-        const element = this.state.data[key];
-        if (element.req != 0 && element.list != undefined) {
-          element.list.forEach(person => {
-            var obj = {
-              name: person.name,
-              email: person.email,
-              phone: person.phone,
-              branch: key
-            }
-            list.push(obj)
-          });
+    if (this.state.branch != undefined) {
+      const element = this.state.data[this.state.branch];
+      if (element.req != 0 && element.list != undefined) {
+        element.list.forEach(person => {
+          var obj = {
+            name: person.name,
+            email: person.email,
+            phone: person.phone,
+            branch: this.state.branch
+          }
+          list.push(obj)
+        });
+      }
+    } else {
+      for (const key in this.state.data) {
+        if (this.state.data.hasOwnProperty(key)) {
+          const element = this.state.data[key];
+          if (element.req != 0 && element.list != undefined) {
+            element.list.forEach(person => {
+              var obj = {
+                name: person.name,
+                email: person.email,
+                phone: person.phone,
+                branch: key
+              }
+              list.push(obj)
+            });
+          }
         }
       }
     }

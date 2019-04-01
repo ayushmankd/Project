@@ -1,82 +1,109 @@
 import React from 'react'
 import './view-list.css'
 import fire from './firebase'
-import { Button, Table, Modal, ModalBody, ModalFooter, ModalHeader, Form, FormGroup, Label, Input } from 'reactstrap'
+import { Button, Table, Modal, ModalBody, ModalFooter, ModalHeader, Form, FormGroup, 
+  Label, Input } from 'reactstrap'
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 export default class ViewList extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
-      list: [],
-      modalNew: false,
-      branches: [],
-      newName: '',
-      newBranch: '',
-      newPhone: '',
-      newEmail: '',
-      DBlist: {},
-      editModal: false,
-      editIndex: ''
+      list:         [],
+      filteredList: [],
+      modalNew:     false,
+      branches:     [],
+      newName:      '',
+      newBranch:    '',
+      newPhone:     '',
+      newEmail:     '',
+      DBlist:       {},
+      editModal:    false,
+      editIndex:    '',
+      currentBranch: ''
     }
   }
   componentDidMount() {
     this.getData()
   }
   getData() {
-    let list = []
-    let branches = []
-    let DBlist = {}
-    let db = fire.firestore()
+    let list =      []
+    let branches =  []
+    let DBlist =    {}
+    let db =        fire.firestore()
     db.collection('teachers').get()
-      .then((snapshot) => {
-        snapshot.forEach((doc) => {
+      .then(snapshot => {
+        snapshot.forEach(doc => {
           let data = doc.data()
           Object.defineProperty(DBlist, doc.id, {
-            value: data.list,
+            value:      data.list,
             enumerable: true,
-            writable: true
+            writable:   true
           })
           data.list.forEach((item, index) => {
             var obj = {
-              Name: item.name,
-              Branch: doc.id,
-              Email: item.email,
-              Phone: item.phone,
-              currInd: index
+              Name:     item.name,
+              Branch:   doc.id,
+              Email:    item.email,
+              Phone:    item.phone,
+              currInd:  index
             }
             branches.push(doc.id)
             list.push(obj)
           })
         });
         return list
-      }).then((list) => {
-        branches = [...new Set(branches.map((item) => item))]
-        this.setState({ list, branches, DBlist })
+      }).then(list => {
+        branches = [...new Set(branches.map(item => item))]
+        this.setState({ list, branches, DBlist, filteredList: list })
       })
-      .catch((err) => {
+      .catch(err => {
         console.log('Error getting documents', err);
       });
   }
   edit(item, index) {
     this.setState({ 
-      newName: item.Name,
-      newEmail: item.Email,
-      newPhone: item.Phone,
-      newBranch: item.Branch,
-      editIndex: item.currInd,
-      modalNew: true,
-      editModal: true,
+      newName:    item.Name,
+      newEmail:   item.Email,
+      newPhone:   item.Phone,
+      newBranch:  item.Branch,
+      editIndex:  item.currInd,
+      modalNew:   true,
+      editModal:  true,
     })
   }
   update() {
     let db = fire.firestore()
     let newList = this.state.DBlist[this.state.newBranch]
+    console.log(newList)
     newList[this.state.editIndex] = {
-      name: this.state.newName,
-      email: this.state.newEmail,
-      phone: this.state.newPhone
+      name:   this.state.newName,
+      email:  this.state.newEmail,
+      phone:  this.state.newPhone
     }
     db.collection('teachers').doc(this.state.newBranch).set({
-      list: newList
+      list:         newList,
+      // filteredList: newList
+    }).then(() => {
+      this.setState({
+        newName:    '',
+        newEmail:   '',
+        newPhone:   '',
+        newBranch:  '',
+        editIndex:  '',
+        modalNew:   false,
+        editModal:  false 
+      })
+      this.getData()
+    })
+  }
+  delete() {
+    let db = fire.firestore()
+    let newList = this.state.DBlist[this.state.newBranch]
+    newList.splice(this.state.editIndex, 1)
+    db.collection('teachers').doc(this.state.newBranch).set({
+      list: newList,
+      // filteredList: newList
     }).then(() => {
       this.setState({
         newName: '',
@@ -85,10 +112,9 @@ export default class ViewList extends React.Component {
         newBranch: '',
         editIndex: '',
         modalNew: false,
-        editModal: false 
+        editModal: false
       })
-      this.getData()
-    })
+      this.getData()})
   }
   addNew() {
     let db = fire.firestore()
@@ -98,14 +124,22 @@ export default class ViewList extends React.Component {
       var appendList = this.state.DBlist[this.state.newBranch]
     db.collection('teachers').doc(this.state.newBranch).set({
       list: [...appendList, {
-        email: this.state.newEmail,
-        name: this.state.newName,
-        phone: this.state.newPhone
+        email:  this.state.newEmail,
+        name:   this.state.newName,
+        phone:  this.state.newPhone
       }]
     }, {
       merge: true,
     }).then(() => {
-      this.setState({ modalNew: false })
+      this.setState({ 
+        newName: '',
+        newEmail: '',
+        newPhone: '',
+        newBranch: '',
+        editIndex: '',
+        modalNew: false,
+        editModal: false
+      })
       this.getData()
     })
   }
@@ -124,23 +158,94 @@ export default class ViewList extends React.Component {
   openNewModal() {
     this.setState({ modalNew: true })
   }
+  filterByBranch(index) {
+    let filteredList = this.state.list
+    let currentBranch = ''
+    if (index != 0) 
+      currentBranch = this.state.branches[index - 1]
+    if (index != 0) 
+      filteredList = filteredList.filter(
+          item => item.Branch == this.state.branches[index - 1]
+        )
+    this.setState({ filteredList, currentBranch })
+  }
+  closeModal() {
+    this.setState({
+      newName: '',
+      newEmail: '',
+      newPhone: '',
+      newBranch: '',
+      editIndex: '',
+      modalNew: false,
+      editModal: false
+    })
+  }
+  genratePdf() {
+    const doc = new jsPDF();
+    let arr = []
+    this.state.filteredList.forEach((item, index) => {
+      let temp = []
+      temp.push((index + 1).toString())
+      temp.push(item.Name.toString())
+      temp.push(item.Phone.toString())
+      temp.push(item.Email.toString())
+      temp.push(item.Branch.toString())
+      arr.push(temp)
+    })
+    doc.autoTable({
+      head: [['Sl No.','Name','Phone','Email','Branch']],
+      body: arr
+    });
+    doc.save('Faculty-List' + this.state.currentBranch + '.pdf');
+  }
   render() {
     return (
       <div className="view-list-container">
         <header className="view-list-header">
           <div className="header-back">
-            <Button color="primary" onClick={() => this.props.history.goBack()}>Back</Button>
+            <Button 
+              color="primary" 
+              onClick={() => this.props.history.goBack()}
+            >
+              Back
+            </Button>
           </div>
         </header>
         <div className="view-list-body">
           <div className="table-head">
             <div className="header-back">
-              <Button color="primary" onClick={() => this.openNewModal()}>
+              <Button
+                className="add-new-button"
+                color="primary"
+                onClick={() => this.genratePdf()}
+              >
+                Download List
+              </Button>
+              <Button 
+                className="add-new-button" 
+                color="primary" 
+                onClick={() => this.openNewModal()}
+              >
                 Add New
               </Button>
+              <FormGroup>
+                <Input 
+                  type="select" 
+                  onChange={newValue => this.filterByBranch(newValue.target.value)}
+                >
+                  <option value={0}>Filter By</option>
+                  {
+                    this.state.branches.map((item, index) =>
+                      <option value={index + 1}>
+                        {item.toString()}
+                      </option>
+                    )
+                  }
+                </Input>
+              </FormGroup>
             </div>
           </div>
-          <Table bordered size="sm" striped>
+          <Table bordered size="sm" striped id="myTable">
             <thead>
               <tr>
                 <th>Sl No.</th>
@@ -152,7 +257,7 @@ export default class ViewList extends React.Component {
               </tr>
             </thead>
             <tbody>
-              {this.state.list.map((item, index) =>
+              {this.state.filteredList.map((item, index) =>
                 <tr>
                   <td>
                     {index + 1}
@@ -186,7 +291,13 @@ export default class ViewList extends React.Component {
           </Table>
         </div>
         <Modal isOpen={this.state.modalNew}>
-          <ModalHeader>New</ModalHeader>
+          <ModalHeader
+            toggle={() => this.closeModal()}
+          >
+            <h4>
+              New
+            </h4>
+          </ModalHeader>
           <ModalBody>
             <Form>
               <FormGroup>
@@ -252,7 +363,17 @@ export default class ViewList extends React.Component {
             {
               this.state.editModal 
                 ?
-                  <Button color="primary" onClick={() => this.update()}>Update</Button>
+                  <div
+                    style={{
+                      display: 'flex',
+                      width: '100%',
+                      justifyContent: 'space-around',
+                      alignItems: 'center'
+                    }}
+                  >
+                    <Button color="primary" onClick={() => this.update()}>Update</Button>
+                    <Button color="danger" onClick={() => this.delete()}>Delete</Button>
+                  </div>
                 :
                   <Button color="primary" onClick={() => this.addNew()}>Add New</Button>
             }

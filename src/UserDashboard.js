@@ -26,7 +26,7 @@ export default class UserDashboard extends React.Component {
           </div>
         </div>
         <div className="user-dashboard-links">
-          <Link 
+          {/* <Link 
             to={{
               pathname: "/fill-new",
               branch: this.state.branch
@@ -37,8 +37,8 @@ export default class UserDashboard extends React.Component {
               <h2 className="user-dashboard-h2">Fill New Schedule</h2>
               <h2 className="user-dashboard-h2">]</h2>
             </div>
-          </Link>
-          <Link to="/view-previous-schedule">
+          </Link> */}
+          <Link to={"/view-previous-schedule/" + this.state.branch}>
             <div className="animation">
               <h2 className="user-dashboard-h2">[</h2>
               <h2 className="user-dashboard-h2">View Previous Schedules</h2>

@@ -4,24 +4,17 @@ export default class TableRowDashboard extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
-      rowNum: props.rowNum,
-      firstSitting: 0,
-      secondSitting: 0,
-      total: 0,
-      date: 0
+      rowNum:         props.rowNum,
+      firstSitting:   0,
+      secondSitting:  0,
+      date:           0
     }
   }
   updateFirstSitting(newValue) {
-    this.setState({firstSitting: newValue.target.value }, () => this.updateTotal())
+    this.setState({ firstSitting: newValue.target.value }, () => this.props.updateTable(this.state))
   }
   updateSecondSitting(newValue) {
-    this.setState({ secondSitting: newValue.target.value }, () => this.updateTotal())
-  }
-  updateTotal() {
-    this.setState({
-      total: parseInt(this.state.secondSitting, 10) + parseInt(this.state.firstSitting, 10)},
-      () => this.props.updateTable(this.state)
-    )
+    this.setState({ secondSitting: newValue.target.value }, () => this.props.updateTable(this.state))
   }
   updateDate(newValue) {
     this.setState({date: newValue.target.value}, () => this.props.updateTable(this.state)) 
@@ -40,11 +33,6 @@ export default class TableRowDashboard extends React.Component {
         </td>
         <td>
           <input value={this.state.secondSitting} onChange={(newValue) => this.updateSecondSitting(newValue)}/>
-        </td>
-        <td>
-          <h5>
-            {this.state.total}
-          </h5>
         </td>
         <td>
           {/* <button>Delete</button> */}

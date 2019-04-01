@@ -1,7 +1,8 @@
 import React from 'react'
 import './schedule.css'
 import fire from './firebase'
-import { Button, Dropdown, DropdownToggle, DropdownMenu, DropdownItem, Modal, ModalBody, ModalFooter, ModalHeader } from 'reactstrap'
+import { Button, Dropdown, DropdownToggle, DropdownMenu, 
+  DropdownItem, Modal, ModalBody, ModalFooter, ModalHeader } from 'reactstrap'
 import FillScheduleTable from './FillScheduleTable';
 export default class FillRequisition extends React.Component {
   constructor(props) {
@@ -10,33 +11,36 @@ export default class FillRequisition extends React.Component {
       dropdown: false,
       dataToShow: [],
       date: null,
-      session: '2019',
+      session: props.session,
       currentDoc: '',
       currentScheduleData: '',
-      branch: props.location.branch,
-      modal: false
+      branch: props.branch,
+      modal: false,
+      alert: false
     }
   }
   async componentDidMount() {
     let dataToShow = []
     let db = fire.firestore()
     var schedulesRef = db.collection("schedules")
-    var schedulesRefNew = schedulesRef.where("session", "==", "2019 Even Sem")
+    var schedulesRefNew = schedulesRef.where("session", "==", this.state.session)
     let schedules = await schedulesRefNew.get()
     schedules.docs.map((schedule) => {
       let data = schedule.data()
-      for (const key in data.schedule) {
-        if (data.schedule.hasOwnProperty(key)) {
-          const element = data.schedule[key];
-          var newObj = {
-            date: key,
-            required: element[this.state.branch].req,
-            list: element[this.state.branch].list
+      data.schedule.forEach((item) => {
+        var newObj = {
+            date:     item.date,
+            sitting:  item.sitting,
+            required: item[this.state.branch].req,
+            list:     item[this.state.branch].list
           }  
-        }
         dataToShow.push(newObj)
-      }
-      this.setState({ dataToShow, currentDoc: schedule.id, currentScheduleData: data }, () => console.log(this.state.dataToShow))
+      })
+      this.setState({ 
+        dataToShow, 
+        currentDoc: schedule.id, 
+        currentScheduleData: data 
+      })
     })
   }
   toggle() {
@@ -58,10 +62,23 @@ export default class FillRequisition extends React.Component {
     dataToShow[index].list = newList
     this.setState({ dataToShow })
   }
+  check() {
+    var value = true
+    this.state.dataToShow.forEach((item, index) => {
+      item.list.forEach((name) => {
+        if (name.name == '') {
+          this.setState({ alert: true })
+          value = false
+        }
+      })
+    })
+    if (value)
+      this.submit()
+  }
   submit() {
     var dataToBeUpdated = this.state.currentScheduleData.schedule
-    this.state.dataToShow.forEach((item) => {
-      dataToBeUpdated[item.date]['CSEA'].list = item.list
+    this.state.dataToShow.forEach((item, index) => {
+      dataToBeUpdated[index][this.state.branch].list = item.list
     })
     let db = fire.firestore()
     db.collection('schedules').doc(this.state.currentDoc).update({
@@ -76,7 +93,12 @@ export default class FillRequisition extends React.Component {
       <div className="schedule-container">
         <header className="schedule-header">
           <div className="header-back">
-            <Button color="primary" onClick={() => this.props.history.goBack()}>Back</Button>
+            <Button 
+              color="primary" 
+              onClick={() => this.props.history.goBack()}
+            >
+              Back
+            </Button>
           </div>
           <div className="header-text">
             <h1>
@@ -89,20 +111,30 @@ export default class FillRequisition extends React.Component {
                 {this.state.date != null ? this.state.date : 'Select Date'}
               </DropdownToggle>
               <DropdownMenu>
-                <DropdownItem onClick={() => this.filterDate(null)}>Show All</DropdownItem>
+                <DropdownItem 
+                  onClick={() => this.filterDate(null)}
+                >
+                  Show All
+                </DropdownItem>
                 {
-                  this.state.dataToShow.map((item) => <DropdownItem onClick={() => this.filterDate(item.date)}>{item.date}</DropdownItem>)
+                  this.state.dataToShow.map((item) => 
+                    <DropdownItem 
+                      onClick={() => this.filterDate(item.date)}
+                    >
+                      {item.date}
+                    </DropdownItem>)
                 }
               </DropdownMenu>
             </Dropdown>
           </div>
         </header>
         <div className="schedule-body">
+          <h2>{this.state.branch}</h2>
           <div className="schedule-body-buttons">
             <Button>
               Print
             </Button>
-            <Button onClick={() => this.submit()}>
+            <Button onClick={() => this.check()}>
               Done
             </Button>
           </div>
@@ -110,10 +142,15 @@ export default class FillRequisition extends React.Component {
             this.state.dataToShow.map((item, indexTable) =>
               <div>
                 <div className="schedule-table-heading">
-                  <h3>Date: {item.date}</h3>
+                  <h3>Date: {item.date} {item.sitting}</h3>
                   <h3>Required: {item.required}</h3>
                 </div>
-                <FillScheduleTable list={item} indexTable={indexTable} updateList={this.updateList}/>
+                <FillScheduleTable 
+                  list={item} 
+                  indexTable={indexTable} 
+                  updateList={this.updateList}
+                  branch={this.state.branch}
+                />
               </div>
             )
           }
@@ -124,8 +161,20 @@ export default class FillRequisition extends React.Component {
             Requisition List has been Sent.
           </ModalBody>
           <ModalFooter>
-            <Button color="primary" onClick={() => this.goToHome()}>Go to Home</Button>
+            <Button color="primary" onClick={() => this.goToHome()}>
+              Go to Home
+            </Button>
           </ModalFooter>
+        </Modal>
+        <Modal isOpen={this.state.alert}>
+          <ModalHeader 
+            toggle={() => this.setState({ alert: false })}
+          >
+            Incomplete Data
+          </ModalHeader>
+          <ModalBody>
+            All the Name Fields must be filled!!!
+          </ModalBody>
         </Modal>
       </div>
     )
