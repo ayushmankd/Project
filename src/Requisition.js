@@ -42,7 +42,7 @@ export default class Requisition extends React.Component {
     db.collection('teachers').get().then((querySnapshot) => {
       querySnapshot.forEach(doc => {
         branches.push({
-          branch: doc.id,
+          branch: doc.id.toString().replace(/\s/g, ""),
           list: doc.data().list,
           total: doc.data().list.length,
           ratio: '0'
@@ -111,6 +111,9 @@ export default class Requisition extends React.Component {
             onClick={() => this.finalize()}
           >
             Finalize
+          </Button>
+          <Button color="danger" onClick={() => this.props.history.replace('/dashboard')}>
+            Cancel
           </Button>
         </header>
         <div className="requisition-container">

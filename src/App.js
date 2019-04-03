@@ -11,6 +11,7 @@ import FillRequisition from './FillRequisition'
 import ScheduleList from './ScheduleList';
 import UpdateList from './UpdateList';
 import ViewList from './ViewList'
+import ViewPasswordList from './ViewPasswordList'
 class App extends Component {
   render() {
     return (
@@ -28,6 +29,7 @@ class App extends Component {
             <Route path="/fill-new/:branch/:session" component={Login} />
             <Route path="/update-list" component={UpdateList} />
             <Route path="/view-list" component={ViewList} />
+            <Route path="/view-password-list" component={ViewPasswordList} />
           </div>
         </Router>
       </div>

@@ -9,9 +9,21 @@ export default class NewSchedule extends React.Component {
     super(props)
     this.state = {
       numOfRows: [1, 2, 3],
+      timings: [
+        "7 AM - 10 AM",
+        "8 AM - 11 AM",
+        "9 AM - 12 PM",
+        "10 AM - 1 PM",
+        "11 AM - 2 PM",
+        "12 PM - 3 PM",
+        "1 PM - 4 PM",
+        "2 PM - 5 PM",
+        "3 PM - 6 PM",
+        "4 PM - 7 PM"
+      ],
       session: '',
-      timing1: '',
-      timing2: '',
+      timing1: '10 AM - 1 PM',
+      timing2: '2 PM - 5 PM',
       table: [],
       modal: true,
       popoverOpen: false
@@ -20,9 +32,6 @@ export default class NewSchedule extends React.Component {
   addNewRow() {
     let newElement = this.state.numOfRows.slice(-1)[0] + 1
     this.setState({numOfRows: [...this.state.numOfRows, newElement]})
-  }
-  componentDidMount() {
-    
   }
   updateTable = (row) => {
     let table = this.state.table;
@@ -47,8 +56,8 @@ export default class NewSchedule extends React.Component {
   getSession() {
     if 
       (
-        this.state.session === '' &&
-        this.state.timing1 === '' &&
+        this.state.session === '' ||
+        this.state.timing1 === '' ||
         this.state.timing2 === ''
       )
       {
@@ -99,6 +108,9 @@ export default class NewSchedule extends React.Component {
                 Next
               </Button>
             </Link>
+            <Button color="danger" onClick={() => this.props.history.goBack()}>
+              Cancel
+            </Button>
           </div>
         </div>
         <Modal isOpen={this.state.modal}>
@@ -114,14 +126,36 @@ export default class NewSchedule extends React.Component {
             <div className="row">
               <Label>Timing (Sitting 1):</Label>
               <Input 
+                type="select"
+                value={this.state.timing1}
                 onChange={(timing1Event) => this.updateTiming1(timing1Event.target.value)}
-              />
+              >
+                {
+                  this.state.timings.map(
+                    timing => 
+                      <option>
+                        {timing}
+                      </option>
+                    ) 
+                }
+              </Input>
             </div>
             <div className="row">
               <Label>Timing (Sitting 2):</Label>
-              <Input 
+              <Input
+                type="select"
+                value={this.state.timing2}
                 onChange={(timing2Event) => this.updateTiming2(timing2Event.target.value)}
-              />
+              >
+                {
+                  this.state.timings.map(
+                    timing =>
+                      <option>
+                        {timing}
+                      </option>
+                  )
+                }
+              </Input>
             </div>
           </ModalBody>
           <ModalFooter>
@@ -130,6 +164,9 @@ export default class NewSchedule extends React.Component {
               id="OKBUTTON"
             >
               OK
+            </Button>
+            <Button color="danger" onClick={() => this.props.history.goBack()}>
+              Cancel
             </Button>
             <Popover 
               placement="bottom" 

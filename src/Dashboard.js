@@ -37,6 +37,9 @@ export default class Dashboard extends React.Component {
           <Link to="/view-list">
             <DashboardLink heading={'View Faculty List'} />
           </Link>
+          <Link to="/view-password-list">
+            <DashboardLink heading={'View Password List'} />
+          </Link>
         </div>
       </div>
     )

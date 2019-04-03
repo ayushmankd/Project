@@ -10,7 +10,6 @@ export default class ScheduleList extends React.Component {
       schedule_list: [],
       branch: props.match.params.branch
     }
-    console.log(this.state.branch)
   } 
   async componentDidMount() {
     let schedule_list = []

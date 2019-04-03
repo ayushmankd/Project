@@ -1,35 +1,29 @@
 import React from 'react'
-import { Button, Spinner } from 'reactstrap'
+import { Button, Spinner, Input, Modal, ModalBody, ModalHeader } from 'reactstrap'
 import './login.css'
 import fire from './firebase'
 import FillRequisition from './FillRequisition';
+import arr from './loginData'
 export default class Login extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
-      username: '',
+      username: 'admin@igitexam.in',
       password: '',
       loading: false,
       session: props.match.params.session,
       login: false,
       branch: props.match.params.branch,
-      UID: [
-        {
-          for: 'CSEA',
-          uid: 'RdPmyV7fIaeAu29ItSVaEorjqNa2'
-        },
-        {
-          for: 'admin',
-          uid: 'Ssqgr2tyGkNBMphIXP0Yd6xj2qK2'
-        },
-      ]
+      UID: arr,
+      modalOpen: false,
+      header: '',
+      text: ''
     }
   }
   login() {
     this.setState({ loading: true })
     fire.auth().signInWithEmailAndPassword(this.state.username, this.state.password).then((user) => {
       this.setState({ loading: false })
-      // console.log(user)
       if (this.state.branch == undefined) {
         let ind = this.state.UID.findIndex((item) => item.uid == user.user.uid)
         if (this.state.UID[ind].for == 'admin')
@@ -45,16 +39,29 @@ export default class Login extends React.Component {
         }
       }      
       }
-    ).catch(function(error) {
-      this.setState({ loading: false })
-      alert('Some Error Occured')
-      // Handle Errors here.
+    ).catch((error) => {
       var errorCode = error.code;
       var errorMessage = error.message;
-      // ...
+      if (errorCode == "auth/wrong-password") 
+        this.setState({ 
+          loading: false, 
+          modalOpen: true, 
+          header: "Incorrect Passoword", 
+          text: "Please Check your Password" 
+        })
+      else
+        this.setState({
+          loading: false,
+          modalOpen: true,
+          header: "Something is Wrong",
+          text: "Please try again later"
+        })
     });
   }
-  
+  selectUsername(val) {
+    let ind = this.state.UID.findIndex(item => item.for === val)
+    this.setState({ username: this.state.UID[ind].username})
+  }
   render() {
     if (this.state.loading) {
       return (
@@ -87,18 +94,27 @@ export default class Login extends React.Component {
             <div className="login-form">
               <div className="input-with-label">
                 <label className="label">Username</label>
-                <input
-                  className="input-1"
-                  type="text"
-                  name="username"
-                  placeholder="Enter username"
-                  value={this.state.username}
-                  onChange={(newValue) => this.setState({ username: newValue.target.value })} />
+                <Input 
+                  type="select" 
+                  className="input-1" 
+                  name="username" 
+                  id="SelectUser"
+                  onChange = {(val) => this.selectUsername(val.target.value)}
+                >
+                  {
+                    this.state.UID.map(
+                      user => 
+                        <option>
+                          {user.for}
+                        </option>
+                      )
+                  }
+                </Input>
               </div>
               <div className="input-with-label">
                 <label className="label">Password</label>
-                <input
-                  class="input-1"
+                <Input
+                  className="input-1"
                   type="password"
                   name="pass"
                   placeholder="Enter password"
@@ -112,6 +128,16 @@ export default class Login extends React.Component {
             </div>
             </Button>
           </div>
+          <Modal isOpen={this.state.modalOpen}>
+            <ModalHeader
+              toggle={() => this.setState({ modalOpen: false})}
+            >
+              {this.state.header}
+            </ModalHeader>
+            <ModalBody>
+              {this.state.text}
+            </ModalBody>
+          </Modal>
         </div>
       )
     }

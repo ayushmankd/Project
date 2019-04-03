@@ -44,3 +44,7 @@
   width: 15%;
   align-self: flex-end
 }
+.show:hover {
+  text-decoration: underline;
+  color: #bb3333
+}
