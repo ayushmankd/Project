@@ -2,7 +2,7 @@ import React from 'react'
 import './schedule.css'
 import fire from './firebase'
 import { Button, Dropdown, DropdownToggle, DropdownMenu, 
-  DropdownItem, Modal, ModalBody, ModalFooter, ModalHeader } from 'reactstrap'
+  DropdownItem, Modal, ModalBody, ModalFooter, ModalHeader, Spinner } from 'reactstrap'
 import FillScheduleTable from './FillScheduleTable';
 export default class FillRequisition extends React.Component {
   constructor(props) {
@@ -11,13 +11,15 @@ export default class FillRequisition extends React.Component {
       dropdown: false,
       dataToShow: [],
       date: null,
-      session: props.session,
+      session: props.match.params.session,
       currentDoc: '',
       currentScheduleData: '',
-      branch: props.branch,
+      branch: props.match.params.branch,
       modal: false,
-      alert: false
+      alert: false,
+      loading: true
     }
+    console.log(this.state)
   }
   async componentDidMount() {
     let dataToShow = []
@@ -39,7 +41,8 @@ export default class FillRequisition extends React.Component {
       this.setState({ 
         dataToShow, 
         currentDoc: schedule.id, 
-        currentScheduleData: data 
+        currentScheduleData: data,
+        loading: false
       })
     })
   }
@@ -48,26 +51,13 @@ export default class FillRequisition extends React.Component {
       dropdown: !prevState.dropdown
     }));
   }
-  filterDate(date) {
-    this.setState({ date })
-    let dataToShow = []
-    if (date == null)
-      dataToShow = this.state.data
-    else
-      dataToShow = this.state.data.filter((item) => date == item.date)
-    this.setState({ dataToShow })
-  }
-  updateList = (newList, index) => {
-    let dataToShow = [...this.state.dataToShow]
-    dataToShow[index].list = newList
-    this.setState({ dataToShow })
-  }
   check() {
+    this.setState({ loading: true })
     var value = true
     this.state.dataToShow.forEach((item, index) => {
       item.list.forEach((name) => {
         if (name.name == '') {
-          this.setState({ alert: true })
+          this.setState({ alert: true, loading: false })
           value = false
         }
       })
@@ -83,100 +73,94 @@ export default class FillRequisition extends React.Component {
     let db = fire.firestore()
     db.collection('schedules').doc(this.state.currentDoc).update({
       schedule: dataToBeUpdated
-    }).then(() => this.setState({ modal: true }))
+    }).then(() => this.setState({ modal: true, loading: false }))
   }
   goToHome() {
     this.props.history.push('/dashboard-user/' + this.state.branch)
   }
   render() {
-    return (
-      <div className="schedule-container">
-        <header className="schedule-header">
-          <div className="header-back">
-            <Button 
-              color="primary" 
-              onClick={() => this.props.history.goBack()}
-            >
-              Back
-            </Button>
-          </div>
-          <div className="header-text">
-            <h1>
-              {this.state.session}
-            </h1>
-          </div>
-          <div className="header-date-picker">
-            <Dropdown isOpen={this.state.dropdown} toggle={() => this.toggle()}>
-              <DropdownToggle caret>
-                {this.state.date != null ? this.state.date : 'Select Date'}
-              </DropdownToggle>
-              <DropdownMenu>
-                <DropdownItem 
-                  onClick={() => this.filterDate(null)}
-                >
-                  Show All
-                </DropdownItem>
-                {
-                  this.state.dataToShow.map((item) => 
-                    <DropdownItem 
-                      onClick={() => this.filterDate(item.date)}
-                    >
-                      {item.date}
-                    </DropdownItem>)
-                }
-              </DropdownMenu>
-            </Dropdown>
-          </div>
-        </header>
-        <div className="schedule-body">
-          <h2>{this.state.branch}</h2>
-          <div className="schedule-body-buttons">
-            <Button>
-              Print
-            </Button>
-            <Button onClick={() => this.check()}>
-              Done
-            </Button>
-          </div>
-          {
-            this.state.dataToShow.map((item, indexTable) =>
-              <div>
-                <div className="schedule-table-heading">
-                  <h3>Date: {item.date} {item.sitting}</h3>
-                  <h3>Required: {item.required}</h3>
-                </div>
-                <FillScheduleTable 
-                  list={item} 
-                  indexTable={indexTable} 
-                  updateList={this.updateList}
-                  branch={this.state.branch}
-                />
-              </div>
-            )
-          }
+    if (this.state.loading) {
+      return (
+        <div
+          style={{
+            height: '100vh',
+            width: '100%',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center'
+          }}
+        >
+          <Spinner />
         </div>
-        <Modal isOpen={this.state.modal}>
-          <ModalHeader>Success</ModalHeader>
-          <ModalBody>
-            Requisition List has been Sent.
-          </ModalBody>
-          <ModalFooter>
-            <Button color="primary" onClick={() => this.goToHome()}>
-              Go to Home
+      )
+    } else {
+      return (
+        <div className="schedule-container">
+          <header className="schedule-header">
+            <div className="header-back">
+              <Button
+                color="primary"
+                onClick={() => this.props.history.goBack()}
+              >
+                Back
             </Button>
-          </ModalFooter>
-        </Modal>
-        <Modal isOpen={this.state.alert}>
-          <ModalHeader 
-            toggle={() => this.setState({ alert: false })}
-          >
-            Incomplete Data
-          </ModalHeader>
-          <ModalBody>
-            All the Name Fields must be filled!!!
+            </div>
+            <div className="header-text">
+              <h1>
+                {this.state.session}
+              </h1>
+            </div>
+          </header>
+          <div className="schedule-body">
+            <h2>{this.state.branch}</h2>
+            <div className="schedule-body-buttons">
+              <Button>
+                Print
+            </Button>
+              <Button onClick={() => this.check()}>
+                Done
+            </Button>
+            </div>
+            {
+              this.state.dataToShow.map((item, indexTable) =>
+                <div>
+                  <div className="schedule-table-heading">
+                    <h3>Date: {item.date} {item.sitting}</h3>
+                    <h3>Required: {item.required}</h3>
+                  </div>
+                  <FillScheduleTable
+                    list={item}
+                    indexTable={indexTable}
+                    updateList={this.updateList}
+                    branch={this.state.branch}
+                  />
+                </div>
+              )
+            }
+          </div>
+          <Modal isOpen={this.state.modal}>
+            <ModalHeader>Success</ModalHeader>
+            <ModalBody>
+              Requisition List has been Sent.
           </ModalBody>
-        </Modal>
-      </div>
-    )
+            <ModalFooter>
+              <Button color="primary" onClick={() => this.goToHome()}>
+                Go to Home
+            </Button>
+            </ModalFooter>
+          </Modal>
+          <Modal isOpen={this.state.alert}>
+            <ModalHeader
+              toggle={() => this.setState({ alert: false })}
+            >
+              Incomplete Data
+          </ModalHeader>
+            <ModalBody>
+              All the Name Fields must be filled!!!
+          </ModalBody>
+          </Modal>
+        </div>
+      )
+    }
   }
 }

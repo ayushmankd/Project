@@ -20,7 +20,9 @@ export default class Schedule extends React.Component {
       printData:    [],
       showRequisitionList: false,
       currentRequisitionList: [],
-      isHovered: false
+      isHovered: false,
+      timing1: props.location.data.timing1,
+      timing2: props.location.data.timing2,
     }
   }
   componentDidMount() {
@@ -53,6 +55,7 @@ export default class Schedule extends React.Component {
     let head = [{}]
     let printData = []
     let dataToShow = this.state.dataToShow
+    console.log("DA", dataToShow)
     Object.defineProperty(head[0], 'date', {
       value: 'Date',
       enumerable: true,
@@ -118,7 +121,11 @@ export default class Schedule extends React.Component {
     let i = 0
     let prev = 0
     for (let index = 0; index <= printData.length; index++) {
-      if ((index - prev) == maxes[i]) {
+      if (maxes[i] == 0) {
+        i++;
+        continue;
+      }
+      else if ((index - prev) == maxes[i]) {
         printData[index - maxes[i]]['date'] = {
           rowSpan: maxes[i],
           content: printData[index - maxes[i]]['date'],
@@ -131,6 +138,13 @@ export default class Schedule extends React.Component {
     this.setState({ head, printData, dataToShow })
   }
   genrateTable() {
+    // CHECK IF ALL THE DEPARTMENTS HAVE FILLED
+    // this.state.dataToShow.forEach(day => {
+    //   if (item.totalReq - item.totalReqCompleted != 0) {
+    //     this.setState({ alertIncompleteList: true })
+    //     return
+    //   }
+    // })
     const doc = new jsPDF('l', 'mm', 'a4')
     doc.autoTable({
       head: this.state.head,
@@ -143,8 +157,8 @@ export default class Schedule extends React.Component {
         doc.text(
           "Indira Gandhi Institue of Technology, Sarang" + '\n' +
           "Invigilation Duty Chart for Diploma \t" + this.state.session + '\n' +
-          "First Sitting: " + '\t\t' +
-          "Second Sitting: ", 80, 10);
+          "First Sitting: " + this.state.timing1 + "\t\t" +
+          "Second Sitting: " + this.state.timing2, 80, 10);
       },
       margin: { top: 40 }
     });
@@ -176,6 +190,12 @@ export default class Schedule extends React.Component {
         </header>
         <div className="schedule-body">
           <div className="schedule-body-buttons">
+            <h4>
+              Sitting 1 Timing: {this.state.timing1}
+            </h4>
+            <h4>
+              Sitting 2 Timing: {this.state.timing2}
+            </h4>
             <Button
               onClick={() => this.genrateTable()}
             >

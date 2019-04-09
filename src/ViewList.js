@@ -2,7 +2,7 @@ import React from 'react'
 import './view-list.css'
 import fire from './firebase'
 import { Button, Table, Modal, ModalBody, ModalFooter, ModalHeader, Form, FormGroup, 
-  Label, Input } from 'reactstrap'
+  Label, Input, Spinner } from 'reactstrap'
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 export default class ViewList extends React.Component {
@@ -20,7 +20,8 @@ export default class ViewList extends React.Component {
       DBlist:       {},
       editModal:    false,
       editIndex:    '',
-      currentBranch: ''
+      currentBranch: '',
+      loading: true
     }
   }
   componentDidMount() {
@@ -55,10 +56,11 @@ export default class ViewList extends React.Component {
         return list
       }).then(list => {
         branches = [...new Set(branches.map(item => item))]
-        this.setState({ list, branches, DBlist, filteredList: list })
+        this.setState({ list, branches, DBlist, filteredList: list, loading: false })
       })
       .catch(err => {
         console.log('Error getting documents', err);
+        this.setState({ loading: false })
       });
   }
   edit(item, index) {
@@ -73,9 +75,9 @@ export default class ViewList extends React.Component {
     })
   }
   update() {
+    this.setState({ loading: true })
     let db = fire.firestore()
     let newList = this.state.DBlist[this.state.newBranch]
-    console.log(newList)
     newList[this.state.editIndex] = {
       name:   this.state.newName,
       email:  this.state.newEmail,
@@ -98,6 +100,7 @@ export default class ViewList extends React.Component {
     })
   }
   delete() {
+    this.setState({ loading: true })
     let db = fire.firestore()
     let newList = this.state.DBlist[this.state.newBranch]
     newList.splice(this.state.editIndex, 1)
@@ -117,6 +120,7 @@ export default class ViewList extends React.Component {
       this.getData()})
   }
   addNew() {
+    this.setState({ loading: true })
     let db = fire.firestore()
     if (this.state.DBlist[this.state.newBranch] == undefined)
       var appendList = []
@@ -199,170 +203,183 @@ export default class ViewList extends React.Component {
     doc.save('Faculty-List' + this.state.currentBranch + '.pdf');
   }
   render() {
-    return (
-      <div className="view-list-container">
-        <header className="view-list-header">
-          <div className="header-back">
-            <Button 
-              color="primary" 
-              onClick={() => this.props.history.goBack()}
-            >
-              Back
-            </Button>
-          </div>
-        </header>
-        <div className="view-list-body">
-          <div className="table-head">
+    if (this.state.loading) {
+      return (
+        <div
+          style={{
+            height: '100vh',
+            width: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}
+        >
+          <Spinner />
+        </div>
+      )
+    } else {
+      return (
+        <div className="view-list-container">
+          <header className="view-list-header">
             <div className="header-back">
               <Button
-                className="add-new-button"
                 color="primary"
-                onClick={() => this.genratePdf()}
+                onClick={() => this.props.history.goBack()}
               >
-                Download List
-              </Button>
-              <Button 
-                className="add-new-button" 
-                color="primary" 
-                onClick={() => this.openNewModal()}
-              >
-                Add New
-              </Button>
-              <FormGroup>
-                <Input 
-                  type="select" 
-                  onChange={newValue => this.filterByBranch(newValue.target.value)}
-                >
-                  <option value={0}>Filter By</option>
-                  {
-                    this.state.branches.map((item, index) =>
-                      <option value={index + 1}>
-                        {item.toString()}
-                      </option>
-                    )
-                  }
-                </Input>
-              </FormGroup>
+                Back
+            </Button>
             </div>
-          </div>
-          <Table bordered size="sm" striped id="myTable">
-            <thead>
-              <tr>
-                <th>Sl No.</th>
-                <th>Name</th>
-                <th>Phone</th>
-                <th>Email</th>
-                <th>Branch</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {this.state.filteredList.map((item, index) =>
+          </header>
+          <div className="view-list-body">
+            <div className="table-head">
+              <div className="header-back">
+                <Button
+                  className="add-new-button"
+                  color="primary"
+                  onClick={() => this.genratePdf()}
+                >
+                  Download List
+              </Button>
+                <Button
+                  className="add-new-button"
+                  color="primary"
+                  onClick={() => this.openNewModal()}
+                >
+                  Add New
+              </Button>
+                <FormGroup>
+                  <Input
+                    type="select"
+                    onChange={newValue => this.filterByBranch(newValue.target.value)}
+                  >
+                    <option value={0}>Filter By</option>
+                    {
+                      this.state.branches.map((item, index) =>
+                        <option value={index + 1}>
+                          {item.toString()}
+                        </option>
+                      )
+                    }
+                  </Input>
+                </FormGroup>
+              </div>
+            </div>
+            <Table bordered size="sm" striped id="myTable">
+              <thead>
                 <tr>
-                  <td>
-                    {index + 1}
-                  </td>
-                  <td>
-                    {item.Name} 
-                  </td>
-                  <td>
-                    {item.Phone} 
-                  </td>
-                  <td>
-                    {item.Email} 
-                  </td>
-                  <td>
-                    {item.Branch} 
-                  </td>
-                  <td onClick={() => this.edit(item, index)}>
-                    <img
-                      src="https://img.icons8.com/ios/50/000000/edit-row.png"
-                      height="20px"
-                      width="20px"
-                      style={{
-                        marginRight: '10px'
-                      }}
-                    />
-                    Edit
-                  </td>
+                  <th>Sl No.</th>
+                  <th>Name</th>
+                  <th>Phone</th>
+                  <th>Email</th>
+                  <th>Branch</th>
+                  <th></th>
                 </tr>
-              )}
-            </tbody>
-          </Table>
-        </div>
-        <Modal isOpen={this.state.modalNew}>
-          <ModalHeader
-            toggle={() => this.closeModal()}
-          >
-            <h4>
+              </thead>
+              <tbody>
+                {this.state.filteredList.map((item, index) =>
+                  <tr>
+                    <td>
+                      {index + 1}
+                    </td>
+                    <td>
+                      {item.Name}
+                    </td>
+                    <td>
+                      {item.Phone}
+                    </td>
+                    <td>
+                      {item.Email}
+                    </td>
+                    <td>
+                      {item.Branch}
+                    </td>
+                    <td onClick={() => this.edit(item, index)}>
+                      <img
+                        src="https://img.icons8.com/ios/50/000000/edit-row.png"
+                        height="20px"
+                        width="20px"
+                        style={{
+                          marginRight: '10px'
+                        }}
+                      />
+                      Edit
+                  </td>
+                  </tr>
+                )}
+              </tbody>
+            </Table>
+          </div>
+          <Modal isOpen={this.state.modalNew}>
+            <ModalHeader
+              toggle={() => this.closeModal()}
+            >
               New
-            </h4>
-          </ModalHeader>
-          <ModalBody>
-            <Form>
-              <FormGroup>
-                <Label for="name">Name</Label>
-                <Input 
-                  type="text" 
-                  name="name" 
-                  id="name" 
-                  placeholder="Name of the Person"
-                  value={this.state.newName} 
-                  onChange={(newName) => this.changeName(newName.target.value)}
-                />
-              </FormGroup>
-              <FormGroup>
-                <Label for="email">Email Address</Label>
-                <Input 
-                  type="email" 
-                  name="email" 
-                  id="email" 
-                  placeholder="Email of the Person" 
-                  value={this.state.newEmail}
-                  onChange={(newEmail) => this.changeEmail(newEmail.target.value)}
-                />
-              </FormGroup>
-              <FormGroup>
-                <Label for="phone">Phone Number</Label>
-                <Input 
-                  type="number" 
-                  name="phone" 
-                  id="phone" 
-                  placeholder="Phone Number of the Person"
-                  value={this.state.newPhone} 
-                  onChange={(newPhone) => this.changePhone(newPhone.target.value)}
-                />
-              </FormGroup>
-              <FormGroup>
-                <Label for="branch">Branch</Label>
-                <Input 
-                  type="text" 
-                  name="branch" 
-                  disabled={this.state.editModal}
-                  id="branch" 
-                  list="branches" 
-                  placeholder="Branch"
-                  value={this.state.newBranch}
-                  onChange={(newBranch) => this.changeBranch(newBranch.target.value)}
-                />
+            </ModalHeader>
+            <ModalBody>
+              <Form>
+                <FormGroup>
+                  <Label for="name">Name</Label>
+                  <Input
+                    type="text"
+                    name="name"
+                    id="name"
+                    placeholder="Name of the Person"
+                    value={this.state.newName}
+                    onChange={(newName) => this.changeName(newName.target.value)}
+                  />
+                </FormGroup>
+                <FormGroup>
+                  <Label for="email">Email Address</Label>
+                  <Input
+                    type="email"
+                    name="email"
+                    id="email"
+                    placeholder="Email of the Person"
+                    value={this.state.newEmail}
+                    onChange={(newEmail) => this.changeEmail(newEmail.target.value)}
+                  />
+                </FormGroup>
+                <FormGroup>
+                  <Label for="phone">Phone Number</Label>
+                  <Input
+                    type="number"
+                    name="phone"
+                    id="phone"
+                    placeholder="Phone Number of the Person"
+                    value={this.state.newPhone}
+                    onChange={(newPhone) => this.changePhone(newPhone.target.value)}
+                  />
+                </FormGroup>
+                <FormGroup>
+                  <Label for="branch">Branch</Label>
+                  <Input
+                    type="text"
+                    name="branch"
+                    disabled={this.state.editModal}
+                    id="branch"
+                    list="branches"
+                    placeholder="Branch"
+                    value={this.state.newBranch}
+                    onChange={(newBranch) => this.changeBranch(newBranch.target.value)}
+                  />
                   <datalist id='branches'>
-                  {
-                    this.state.branches.map((item, index) =>
-                      <option 
-                        key={index.toString()}
-                      >
-                        {item}
-                      </option>
-                    )
-                  }
+                    {
+                      this.state.branches.map((item, index) =>
+                        <option
+                          key={index.toString()}
+                        >
+                          {item}
+                        </option>
+                      )
+                    }
                   </datalist>
-              </FormGroup>
-            </Form>
-          </ModalBody>
-          <ModalFooter>
-            {
-              this.state.editModal 
-                ?
+                </FormGroup>
+              </Form>
+            </ModalBody>
+            <ModalFooter>
+              {
+                this.state.editModal
+                  ?
                   <div
                     style={{
                       display: 'flex',
@@ -374,12 +391,13 @@ export default class ViewList extends React.Component {
                     <Button color="primary" onClick={() => this.update()}>Update</Button>
                     <Button color="danger" onClick={() => this.delete()}>Delete</Button>
                   </div>
-                :
+                  :
                   <Button color="primary" onClick={() => this.addNew()}>Add New</Button>
-            }
-          </ModalFooter>
-        </Modal>
-      </div>
-    )
-  }
+              }
+            </ModalFooter>
+          </Modal>
+        </div>
+      )
+    }
+  } 
 }

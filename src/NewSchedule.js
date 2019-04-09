@@ -36,7 +36,14 @@ export default class NewSchedule extends React.Component {
   updateTable = (row) => {
     let table = this.state.table;
     table[row.rowNum - 1] = row
+    let dateArr = []
+    table.forEach(item => dateArr.push(item.date))
+    if (this.hasDuplicates(dateArr))
+      alert('Same Dates are not Allowed')
     this.setState({ table })
+  }
+  hasDuplicates(array) {
+    return (new Set(array)).size !== array.length;
   }
   delete = (rowNum) => {
     let numOfRows = [...this.state.numOfRows]
@@ -102,7 +109,9 @@ export default class NewSchedule extends React.Component {
             <Link to={{
               pathname: "/requisition",
               table: this.state.table,
-              session: this.state.session
+              session: this.state.session,
+              timing1: this.state.timing1,
+              timing2: this.state.timing2
             }}>
               <Button>
                 Next

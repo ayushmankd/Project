@@ -1,5 +1,5 @@
 import React from 'react'
-import { Table } from 'reactstrap'
+import { Table, Spinner } from 'reactstrap'
 import fire from './firebase'
 import FillScheduleTableInputComponent from './FillScheduleTableInputComponent';
 export default class FillScheduleTable extends React.Component {
@@ -10,7 +10,8 @@ export default class FillScheduleTable extends React.Component {
       required: props.list.required,
       tableIndex: props.indexTable,
       facultiesList: [],
-      fullList: []
+      fullList: [], 
+      loading: true
     }
   }
   componentDidMount() {
@@ -33,10 +34,11 @@ export default class FillScheduleTable extends React.Component {
         let data = snapshot.data()
         let namesList = []
         data.list.forEach(item => namesList.push(item.name))
-        this.setState({ facultiesList: namesList, fullList: data.list })
+        this.setState({ facultiesList: namesList, fullList: data.list, loading: false })
       })
       .catch((err) => {
         console.log('Error getting documents', err);
+        this.setState({ loading: false })
       });
   }
   updateEmail(email, index) {
@@ -65,42 +67,58 @@ export default class FillScheduleTable extends React.Component {
     this.setState({ list, facultiesList: newList }, () => this.props.updateList(list, this.state.tableIndex))
   } 
   render() {
-    return (
-      <Table bordered>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Phone</th>
-          </tr>
-        </thead>
-        <tbody>
-          {
-            this.state.list.map((item, index) => 
+    if (this.state.loading) {
+      return (
+        <div
+          style={{
+            height: '100vh',
+            width: '100%',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center'
+          }}
+        >
+          <Spinner />
+        </div>
+      )
+    } else {
+      return (
+        <Table bordered>
+          <thead>
             <tr>
-              <td>
-                <FillScheduleTableInputComponent
-                  suggestions={this.state.facultiesList}
-                  update={this.update}
-                  index={index}
-                />
-              </td>
-              <td>
-                <input 
-                  type="email" 
-                  value={item.email} 
-                  onChange={(newValue) => this.updateEmail(newValue.target.value, index)}/>
-              </td>
-              <td>
-                <input 
-                  type="tel" 
-                  value={item.phone} 
-                  onChange={(newValue) => this.updatePhone(newValue.target.value, index)}/>
-              </td>
-            </tr>)
-          }
-        </tbody>
-      </Table>
-    )
+              <th>Name</th>
+              <th>Email</th>
+              <th>Phone</th>
+            </tr>
+          </thead>
+          <tbody>
+            {
+              this.state.list.map((item, index) =>
+                <tr>
+                  <td>
+                    <FillScheduleTableInputComponent
+                      suggestions={this.state.facultiesList}
+                      update={this.update}
+                      index={index}
+                    />
+                  </td>
+                  <td>
+                    <input
+                      type="email"
+                      value={item.email}
+                      onChange={(newValue) => this.updateEmail(newValue.target.value, index)} />
+                  </td>
+                  <td>
+                    <input
+                      type="tel"
+                      value={item.phone}
+                      onChange={(newValue) => this.updatePhone(newValue.target.value, index)} />
+                  </td>
+                </tr>)
+            }
+          </tbody>
+        </Table>
+      )
+    }
   }
 }

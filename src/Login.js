@@ -17,7 +17,14 @@ export default class Login extends React.Component {
       UID: arr,
       modalOpen: false,
       header: '',
-      text: ''
+      text: '',
+      default: 'admin'
+    }
+  }
+  componentDidMount() {
+    if (this.state.branch != undefined) {
+      let ind = this.state.UID.findIndex(item => item.for == this.state.branch)
+      this.setState({ default: this.state.UID[ind].for })
     }
   }
   login() {
@@ -60,7 +67,7 @@ export default class Login extends React.Component {
   }
   selectUsername(val) {
     let ind = this.state.UID.findIndex(item => item.for === val)
-    this.setState({ username: this.state.UID[ind].username})
+    this.setState({ username: this.state.UID[ind].username, default: val})
   }
   render() {
     if (this.state.loading) {
@@ -100,6 +107,7 @@ export default class Login extends React.Component {
                   name="username" 
                   id="SelectUser"
                   onChange = {(val) => this.selectUsername(val.target.value)}
+                  value = {this.state.default}
                 >
                   {
                     this.state.UID.map(

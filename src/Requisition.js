@@ -1,7 +1,7 @@
 import React from 'react'
 import './requisition.css'
 import fire from './firebase'
-import { Table, Button, Modal, ModalBody, ModalFooter, ModalHeader, Alert } from 'reactstrap'
+import { Table, Button, Modal, ModalBody, ModalFooter, ModalHeader, Alert, Spinner } from 'reactstrap'
 export default class Requisition extends React.Component {
   constructor(props) {
     super(props) 
@@ -10,7 +10,10 @@ export default class Requisition extends React.Component {
       session: props.location.session,
       currentTable: [],
       branches: [],
-      alertOpen: false
+      alertOpen: false,
+      loading: true,
+      timing1: props.location.timing1,
+      timing2: props.location.timing2
     }
   }
   componentDidMount() {
@@ -29,8 +32,10 @@ export default class Requisition extends React.Component {
         'totalStudents': item.secondSitting,
         'totalReq': Math.round((parseInt(item.secondSitting, 10) / 20 * 1.1) + 2),
       }
-      currentTable.push(obj1)
-      currentTable.push(obj2)
+      if (obj1.totalReq != 2) 
+        currentTable.push(obj1)
+      if (obj2.totalReq != 2)
+        currentTable.push(obj2)
     })
     this.setState({
       currentTable
@@ -60,130 +65,170 @@ export default class Requisition extends React.Component {
     branches.forEach((item) => {
       item.ratio = item.total / totalFaculties
     })
+    this.setState({ branches, loading: false }, () => this.getRequired())
+  }
+  getRequired() {
+    let branches = [...this.state.branches]
+    this.state.branches.forEach(branch =>
+      this.state.currentTable.forEach(req =>
+        Object.defineProperty(req, 'req', {
+          value: Math.round(req.totalReq * parseFloat(branch.ratio)),
+          enumerable: true,
+          writable: true
+        })
+      )
+    )
+    this.state.currentTable.forEach(req => {
+      let totalReq = req.totalReq
+      this.state.branches.forEach(branch => {
+        totalReq -= branch.req
+      })
+      if (totalReq > 0) {
+
+      } else if (totalReq < 0) {
+        
+      }
+    })
     this.setState({ branches })
   }
   finalize() {
-      let db = fire.firestore()
-      var docRef = db.collection('schedules')
-      var objectToAdd = {
-        session: this.state.session,
-        schedule: []
-      }
-      this.state.currentTable.forEach(element =>{
-        this.state.branches.forEach(
-          branch => {
-            Object.defineProperty(element, branch.branch, {
-              value: {
-                req: Math.round(element.totalReq * parseFloat(branch.ratio)),
-                list: []
-              },
-              enumerable: true,
-              writable: true
-            })
-          }
-        )
-        objectToAdd.schedule.push(element)
-      })
-      docRef.add(objectToAdd).then(() => this.setState({ alertOpen: true }));
+    this.setState({ loading: true })
+    let db = fire.firestore()
+    var docRef = db.collection('schedules')
+    var objectToAdd = {
+      session: this.state.session,
+      schedule: [],
+      timing1: this.state.timing1,
+      timing2: this.state.timing2,
+    }
+    this.state.currentTable.forEach(element =>{
+      this.state.branches.forEach(
+        branch => {
+          Object.defineProperty(element, branch.branch, {
+            value: {
+              req: Math.round(element.totalReq * parseFloat(branch.ratio)),
+              list: []
+            },
+            enumerable: true,
+            writable: true
+          })
+        }
+      )
+      objectToAdd.schedule.push(element)
+    })
+    docRef.add(objectToAdd).then(() => this.setState({ alertOpen: true, loading: false }));
   }
   gotoHome() {
     this.setState({alertOpen: false}, () => this.props.history.push('/dashboard'))
   }
   render() {
-    return (
-      <div>
-        <Modal isOpen={this.state.alertOpen}>
-          <ModalHeader>
-            Requisition List Sent!
-          </ModalHeader>
-          <ModalFooter>
-            <Button color="primary" onClick={() => this.gotoHome()}>
-              Back to Home
-            </Button>
-          </ModalFooter>
-        </Modal>
-        <header className="requisition-header">
-          <h2 className="requisition-h1">
-            Requisition List for {this.state.session}
-          </h2>
-          <Button
-            color="primary"
-            onClick={() => this.finalize()}
-          >
-            Finalize
-          </Button>
-          <Button color="danger" onClick={() => this.props.history.replace('/dashboard')}>
-            Cancel
-          </Button>
-        </header>
-        <div className="requisition-container">
-          <Table bordered>
-            <tr>
-              <td>
-                <b>
-                  Branch
-                </b>
-              </td>
-              {
-                this.state.currentTable.map(item => 
-                  <td
-                    style={{
-                      minWidth: '100px'
-                    }}
-                  >
-                    <b>
-                      {item.date} {'\n'} {item.sitting}
-                    </b>
-                  </td>
-                )
-              }
-            </tr>
-            {
-              this.state.branches.map((item) => 
-                <tr>
-                  <td>
-                    {item.branch}
-                  </td>
-                  {
-                    this.state.currentTable.map(req =>
-                      <td>
-                        {/* <input 
-                          value={Math.round(req.totalReq * Math.fround(parseFloat(item.ratio)))}
-                        /> */}
-                        {Math.round(req.totalReq * parseFloat(item.ratio))}
-                      </td>
-                    )
-                  }
-                </tr>
-              )
-            }
-            <tr>
-              <td>
-                <b>Total Required</b>
-              </td>
-              {
-                this.state.currentTable.map(item =>
-                  <td>
-                    <b>{item.totalReq}</b>
-                  </td>
-                )
-              }
-            </tr>
-            <tr>
-              <td>
-                <b>Total Students</b>
-              </td>
-              {
-                this.state.currentTable.map(item =>
-                  <td>
-                    <b>{item.totalStudents}</b>
-                  </td>
-                )
-              }
-            </tr>
-          </Table>
+    if (this.state.loading) {
+      return (
+        <div
+          style={{
+            height: '100vh',
+            width: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}
+        >
+          <Spinner />
         </div>
-      </div>
-    )
+      )
+    } else {
+      return (
+        <div>
+          <Modal isOpen={this.state.alertOpen}>
+            <ModalHeader>
+              Requisition List Sent!
+          </ModalHeader>
+            <ModalFooter>
+              <Button color="primary" onClick={() => this.gotoHome()}>
+                Back to Home
+            </Button>
+            </ModalFooter>
+          </Modal>
+          <header className="requisition-header">
+            <h2 className="requisition-h1">
+              Requisition List for {this.state.session}
+            </h2>
+            <Button
+              color="primary"
+              onClick={() => this.finalize()}
+            >
+              Finalize
+          </Button>
+            <Button color="danger" onClick={() => this.props.history.replace('/dashboard')}>
+              Cancel
+          </Button>
+          </header>
+          <div className="requisition-container">
+            <Table bordered>
+              <tr>
+                <td>
+                  <b>
+                    Branch
+                </b>
+                </td>
+                {
+                  this.state.currentTable.map(item =>
+                    <td
+                      style={{
+                        minWidth: '100px'
+                      }}
+                    >
+                      <b>
+                        {item.date} {'\n'} {item.sitting}
+                      </b>
+                    </td>
+                  )
+                }
+              </tr>
+              {
+                this.state.branches.map((item) =>
+                  <tr>
+                    <td>
+                      {item.branch}
+                    </td>
+                    {
+                      this.state.currentTable.map(req =>
+                        <td>
+                          {Math.round(req.totalReq * parseFloat(item.ratio))}
+                        </td>
+                      )
+                    }
+                  </tr>
+                )
+              }
+              <tr>
+                <td>
+                  <b>Total Required</b>
+                </td>
+                {
+                  this.state.currentTable.map(item =>
+                    <td>
+                      <b>{item.totalReq}</b>
+                    </td>
+                  )
+                }
+              </tr>
+              <tr>
+                <td>
+                  <b>Total Students</b>
+                </td>
+                {
+                  this.state.currentTable.map(item =>
+                    <td>
+                      <b>{item.totalStudents}</b>
+                    </td>
+                  )
+                }
+              </tr>
+            </Table>
+          </div>
+        </div>
+      )
+    }
   }
 }

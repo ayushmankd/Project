@@ -8,7 +8,6 @@ export default class ScheduleTable extends React.Component {
       list: [],
       branch: props.branch
     }
-    console.log(this.state.branch)
   }
   componentDidMount() {
     let list = []
