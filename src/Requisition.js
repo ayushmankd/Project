@@ -69,27 +69,29 @@ export default class Requisition extends React.Component {
   }
   getRequired() {
     let branches = [...this.state.branches]
-    this.state.branches.forEach(branch =>
+    let currentTable = [...this.state.currentTable]
+    branches.forEach(branch =>
       this.state.currentTable.forEach(req =>
-        Object.defineProperty(req, 'req', {
+        Object.defineProperty(req, branch.branch, {
           value: Math.round(req.totalReq * parseFloat(branch.ratio)),
           enumerable: true,
           writable: true
         })
       )
     )
-    this.state.currentTable.forEach(req => {
+    currentTable.forEach(req => {
       let totalReq = req.totalReq
-      this.state.branches.forEach(branch => {
-        totalReq -= branch.req
+      let total = 0
+      branches.forEach(branch => {
+        total += req[branch.branch]
       })
-      if (totalReq > 0) {
-
-      } else if (totalReq < 0) {
-        
+      if (totalReq > total) {
+        req['Mechanical'] += totalReq - total 
+      } else if (totalReq < total) {
+        req['Mechanical'] -= total - totalReq 
       }
     })
-    this.setState({ branches })
+    this.setState({ branches, currentTable })
   }
   finalize() {
     this.setState({ loading: true })
@@ -174,9 +176,7 @@ export default class Requisition extends React.Component {
                 {
                   this.state.currentTable.map(item =>
                     <td
-                      style={{
-                        minWidth: '100px'
-                      }}
+                      style={{ minWidth: '100px' }}
                     >
                       <b>
                         {item.date} {'\n'} {item.sitting}
@@ -194,7 +194,8 @@ export default class Requisition extends React.Component {
                     {
                       this.state.currentTable.map(req =>
                         <td>
-                          {Math.round(req.totalReq * parseFloat(item.ratio))}
+                          {/* {Math.round(req.totalReq * parseFloat(item.ratio))} */}
+                          {req[item.branch]}
                         </td>
                       )
                     }

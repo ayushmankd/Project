@@ -55,7 +55,6 @@ export default class Schedule extends React.Component {
     let head = [{}]
     let printData = []
     let dataToShow = this.state.dataToShow
-    console.log("DA", dataToShow)
     Object.defineProperty(head[0], 'date', {
       value: 'Date',
       enumerable: true,

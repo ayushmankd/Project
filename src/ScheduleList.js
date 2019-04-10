@@ -77,16 +77,23 @@ export default class ScheduleList extends React.Component {
                         View
                     </Link>
                     </td>
-                    <td onClick={() => this.deleteSchedule(index)}>
-                      <img
-                        src="https://img.icons8.com/ios/50/000000/trash.png"
-                        height="30px"
-                        width="30px"
-                        style={{
-                          marginRight: '10px'
-                        }}
-                      />
-                    </td>
+                    {
+                      this.state.branch == undefined ? 
+                        <td onClick={() => this.deleteSchedule(index)}>
+                          <img
+                            src="https://img.icons8.com/ios/50/000000/trash.png"
+                            height="30px"
+                            width="30px"
+                            style={{
+                              marginRight: '10px'
+                            }}
+                          />
+                        </td>
+                        :
+                        <td>
+                          
+                        </td>
+                    }
                   </tr>
                 )}
               </tbody>

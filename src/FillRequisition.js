@@ -19,7 +19,6 @@ export default class FillRequisition extends React.Component {
       alert: false,
       loading: true
     }
-    console.log(this.state)
   }
   async componentDidMount() {
     let dataToShow = []
@@ -77,6 +76,11 @@ export default class FillRequisition extends React.Component {
   }
   goToHome() {
     this.props.history.push('/dashboard-user/' + this.state.branch)
+  }
+  updateList = (list, index) => {
+    let dataToShow = this.state.dataToShow
+    dataToShow[index].list = list
+    this.setState({ dataToShow })
   }
   render() {
     if (this.state.loading) {

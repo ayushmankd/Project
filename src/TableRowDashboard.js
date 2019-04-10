@@ -13,7 +13,6 @@ export default class TableRowDashboard extends React.Component {
     }
   }
   updateFirstSitting(newValue) {
-    console.log(newValue.target.value)
     if (parseInt(newValue.target.value, 10) == NaN)
       this.setState({ popoverOpenSitting1: true })
     else
