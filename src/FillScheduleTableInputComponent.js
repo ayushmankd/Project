@@ -138,7 +138,7 @@ class FillScheduleTableInputComponent extends Component {
       } else {
         suggestionsListComponent = (
           <div class="no-suggestions">
-            <em>No suggestions, you're on your own!</em>
+            <em>No faculties present for the given string, try adding them first on the dashboard.</em>
           </div>
         );
       }

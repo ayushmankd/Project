@@ -9,10 +9,10 @@ import { BrowserRouter as Router, Route, Switch } from 'react-router-dom'
 import Dashboard from './Dashboard';
 import FillRequisition from './FillRequisition'
 import ScheduleList from './ScheduleList';
-import UpdateList from './UpdateList';
 import ViewList from './ViewList'
 import ViewPasswordList from './ViewPasswordList'
 import Page_404 from './Page_404.js'
+import UpdateListBranch from './UpdateListBranch'
 class App extends Component {
   render() {
     return (
@@ -28,7 +28,7 @@ class App extends Component {
             <Route path="/schedule/:schedule" exact component={Schedule} />
             <Route path="/requisition" exact component={Requisition} />
             <Route path="/fill-new/:branch/:session" exact component={FillRequisition} />
-            <Route path="/update-list" exact component={UpdateList} />
+            <Route path="/update-list/:branch" exact component={UpdateListBranch} />
             <Route path="/view-list" exact component={ViewList} />
             <Route path="/view-password-list" exact component={ViewPasswordList} />
             <Route component={Page_404} />

@@ -7,10 +7,11 @@ export default class UserDashboard extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
-      branch: props.match.params.branch,
+      branch: props.match.params.branch.toString().replace(/\s/g, ""),
       newSession: '',
       loading: true,
-      modalOpen: false
+      modalOpen: false,
+      propsBranch: props.match.params.branch
     }
   }
   componentDidMount() {
@@ -66,7 +67,7 @@ export default class UserDashboard extends React.Component {
           <div className="user-dashboard-links">
             <Link
               to={{
-                pathname: "/fill-new/" + this.state.branch + '/' + this.state.newSession,
+                pathname: "/fill-new/" + this.state.propsBranch + '/' + this.state.newSession,
               }}
             >
               <div className="animation">
@@ -82,13 +83,13 @@ export default class UserDashboard extends React.Component {
                 <h2 className="user-dashboard-h2">]</h2>
               </div>
             </Link>
-            {/* <Link to="/update-list">
+            <Link to={"/update-list/" + this.state.propsBranch}>
             <div className="animation">
               <h2 className="user-dashboard-h2">[</h2>
               <h2 className="user-dashboard-h2">Update List</h2>
               <h2 className="user-dashboard-h2">]</h2>
             </div>
-          </Link> */}
+          </Link>
           </div>
           <Modal isOpen={this.state.modalOpen}>
             <ModalHeader

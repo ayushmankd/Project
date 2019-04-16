@@ -15,6 +15,7 @@ export default class FillRequisition extends React.Component {
       currentDoc: '',
       currentScheduleData: '',
       branch: props.match.params.branch,
+      compressedBranch: props.match.params.branch.toString().replace(/\s/g, ""),
       modal: false,
       alert: false,
       loading: true
@@ -32,8 +33,8 @@ export default class FillRequisition extends React.Component {
         var newObj = {
             date:     item.date,
             sitting:  item.sitting,
-            required: item[this.state.branch].req,
-            list:     item[this.state.branch].list
+            required: item[this.state.compressedBranch].req,
+            list:     item[this.state.compressedBranch].list
           }  
         dataToShow.push(newObj)
       })
@@ -67,7 +68,7 @@ export default class FillRequisition extends React.Component {
   submit() {
     var dataToBeUpdated = this.state.currentScheduleData.schedule
     this.state.dataToShow.forEach((item, index) => {
-      dataToBeUpdated[index][this.state.branch].list = item.list
+      dataToBeUpdated[index][this.state.compressedBranch].list = item.list
     })
     let db = fire.firestore()
     db.collection('schedules').doc(this.state.currentDoc).update({

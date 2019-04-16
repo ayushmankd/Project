@@ -65,7 +65,7 @@ export default class Requisition extends React.Component {
     branches.forEach((item) => {
       item.ratio = item.total / totalFaculties
     })
-    this.setState({ branches, loading: false }, () => this.getRequired())
+    this.setState({ branches }, () => this.getRequired())
   }
   getRequired() {
     let branches = [...this.state.branches]
@@ -73,25 +73,30 @@ export default class Requisition extends React.Component {
     branches.forEach(branch =>
       this.state.currentTable.forEach(req =>
         Object.defineProperty(req, branch.branch, {
-          value: Math.round(req.totalReq * parseFloat(branch.ratio)),
+          value: {
+            req: Math.round(req.totalReq * parseFloat(branch.ratio)),
+            list: []
+          },
           enumerable: true,
           writable: true
         })
       )
     )
+    console.log("CUR", currentTable)
     currentTable.forEach(req => {
       let totalReq = req.totalReq
       let total = 0
       branches.forEach(branch => {
-        total += req[branch.branch]
+        total += req[branch.branch].req
       })
       if (totalReq > total) {
-        req['Mechanical'] += totalReq - total 
+        req['Mechanical'].req += totalReq - total 
       } else if (totalReq < total) {
-        req['Mechanical'] -= total - totalReq 
+        req['Mechanical'].req -= total - totalReq 
       }
     })
-    this.setState({ branches, currentTable })
+    console.log("RUC", currentTable)
+    this.setState({ branches, currentTable, loading: false })
   }
   finalize() {
     this.setState({ loading: true })
@@ -194,8 +199,7 @@ export default class Requisition extends React.Component {
                     {
                       this.state.currentTable.map(req =>
                         <td>
-                          {/* {Math.round(req.totalReq * parseFloat(item.ratio))} */}
-                          {req[item.branch]}
+                          {req[item.branch].req}
                         </td>
                       )
                     }
